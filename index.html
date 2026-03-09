@@ -2257,7 +2257,7 @@ button.player-tap:active{opacity:.6}
 .plr-del-btn:hover{background:rgba(233,69,96,.2);color:var(--red);border-color:var(--red)}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 <div id="sync-topbar" class="sync-topbar" style="display:none"></div>
@@ -2370,115 +2370,6 @@ let homeArchiveFormGender  = 'M';  // default gender for next player
 let playersGender = 'M';
 let playersSearch = '';
 let playersSort   = 'pts'; // 'pts' | 'wins' | 'trn'
-
-// ── TOURNAMENT FORMAT INFRASTRUCTURE ────────────────────────
-let activeFormat = 'KING';  // 'KING' | 'PAIRS' | 'ROUND_ROBIN'
-
-// Format-specific state
-let formatState = {
-  KING: {
-    scores: makeBlankScores(),
-    divScores: makeBlankDivScores(),
-    divRoster: makeBlankDivRoster(),
-    ppc: ppc,
-    nc: nc,
-    scoreTs: {}
-  },
-  PAIRS: {
-    pairs: { mens: [], womens: [], mixed: [] },
-    bracket: { mens: null, womens: null, mixed: null },
-    activePairsCategory: 'mens'  // 'mens' | 'womens' | 'mixed'
-  },
-  ROUND_ROBIN: {
-    standings: { mens: [], womens: [], mixed: [] },
-    matches: { mens: [], womens: [], mixed: [] },
-    activeRRCategory: 'mens'  // 'mens' | 'womens' | 'mixed'
-  }
-};
-
-// Format configurations
-const FORMAT_CONFIGS = {
-  KING: {
-    name: 'KING',
-    label: 'King of the Court',
-    icon: '👑',
-    navType: 'courts_and_divisions',
-    screensList: ['home', 'players', 'svod', 'stats', 'roster', 0, 1, 2, 3, 'hard', 'advance', 'medium', 'lite'],
-    hasRounds: true,
-    maxCourts: 4
-  },
-  PAIRS: {
-    name: 'PAIRS',
-    label: 'Пары 2×2',
-    icon: '👥',
-    navType: 'category_tabs',
-    categories: ['mens', 'womens', 'mixed'],
-    screensList: ['home', 'players', 'pairs_bracket', 'pairs_stats', 'pairs_roster']
-  },
-  ROUND_ROBIN: {
-    name: 'ROUND_ROBIN',
-    label: 'Круговая система',
-    icon: '🔄',
-    navType: 'category_tabs',
-    categories: ['mens', 'womens', 'mixed'],
-    screensList: ['home', 'players', 'rr_standings', 'rr_stats', 'rr_roster']
-  }
-};
-
-function getCurrentFormat() {
-  return FORMAT_CONFIGS[activeFormat];
-}
-
-function getCurrentFormatState() {
-  return formatState[activeFormat];
-}
-
-function syncKingStateToFormatState() {
-  // Save current KING state to formatState
-  formatState.KING = {
-    scores: scores,
-    divScores: divScores,
-    divRoster: divRoster,
-    ppc: ppc,
-    nc: nc,
-    scoreTs: scoreTs
-  };
-}
-
-function syncFormatStateToKing() {
-  // Load KING state from formatState
-  const state = formatState.KING;
-  scores = state.scores;
-  divScores = state.divScores;
-  divRoster = state.divRoster;
-  ppc = state.ppc;
-  nc = state.nc;
-  scoreTs = state.scoreTs;
-}
-
-function switchFormat(fmt) {
-  if (!FORMAT_CONFIGS[fmt]) {
-    showToast(`❌ Неизвестный формат: ${fmt}`);
-    return;
-  }
-  // Sync current format state before switching
-  if (activeFormat === 'KING') {
-    syncKingStateToFormatState();
-  }
-
-  activeFormat = fmt;
-
-  // Restore format state after switching
-  if (fmt === 'KING') {
-    syncFormatStateToKing();
-  }
-
-  activeTabId = 0;
-  saveState();
-  buildAll();
-  switchTab(0);
-  showToast(`✅ Формат: ${FORMAT_CONFIGS[fmt].label}`);
-}
 
 function loadPlayerDB() {
   try { return JSON.parse(localStorage.getItem('kotc3_playerdb') || '[]'); } catch(e){ return []; }
@@ -4755,26 +4646,12 @@ function getAllRoundsForPlayer(p) {
 // ════════════════════════════════════════════════════════════
 function saveState() {
   try {
-    localStorage.setItem('kotc_version',     '2.0');
-    localStorage.setItem('kotc3_active_format', activeFormat);
-
-    // Sync current format state before saving
-    if (activeFormat === 'KING') {
-      syncKingStateToFormatState();
-    }
-
-    // Save all format states
-    localStorage.setItem('kotc3_format_states', JSON.stringify(formatState));
-
-    // Legacy: save KING state for backward compatibility
-    if (formatState.KING) {
-      localStorage.setItem('kotc3_cfg',        JSON.stringify({ ppc: formatState.KING.ppc, nc: formatState.KING.nc }));
-      localStorage.setItem('kotc3_scores',     JSON.stringify(formatState.KING.scores));
-      localStorage.setItem('kotc3_divscores',  JSON.stringify(formatState.KING.divScores));
-      localStorage.setItem('kotc3_divroster',  JSON.stringify(formatState.KING.divRoster));
-    }
-
+    localStorage.setItem('kotc_version',     '1.1');
+    localStorage.setItem('kotc3_cfg',        JSON.stringify({ ppc, nc }));
+    localStorage.setItem('kotc3_scores',     JSON.stringify(scores));
     localStorage.setItem('kotc3_roster',     JSON.stringify(ALL_COURTS.map(c=>({men:[...c.men],women:[...c.women]}))));
+    localStorage.setItem('kotc3_divscores',  JSON.stringify(divScores));
+    localStorage.setItem('kotc3_divroster',  JSON.stringify(divRoster));
     localStorage.setItem('kotc3_meta',       JSON.stringify(tournamentMeta));
     localStorage.setItem('kotc3_eventlog',   JSON.stringify(tournamentHistory));
   } catch(e){}
@@ -4783,32 +4660,18 @@ function saveState() {
 
 function loadState() {
   try {
-    // Load active format
-    const savedFormat = localStorage.getItem('kotc3_active_format');
-    if (savedFormat && FORMAT_CONFIGS[savedFormat]) {
-      activeFormat = savedFormat;
-    }
-
-    // Version migration
+    // Version migration: if old version or no version, clear scores to avoid corruption
     const ver = localStorage.getItem('kotc_version');
-    if (!ver || ver < '2.0') {
-      // Migrate from old format to new formatState
-      migrateToNewFormat();
-      localStorage.setItem('kotc_version','2.0');
-    } else {
-      // Load new format: format states from localStorage
-      const saved = localStorage.getItem('kotc3_format_states');
-      if (saved) {
-        try {
-          formatState = JSON.parse(saved);
-        } catch(e) {}
-      }
+    if (!ver || ver < '1.1') {
+      ['kotc3_scores','kotc3_divscores','kotc3_divroster'].forEach(k=>localStorage.removeItem(k));
+      localStorage.setItem('kotc_version','1.1');
     }
-
-    // Load KING format
-    syncFormatStateToKing();
-
-    // Load common data
+    const cfg = localStorage.getItem('kotc3_cfg');
+    if (cfg) {
+      const p = JSON.parse(cfg);
+      if ([4,5].includes(+p.ppc))           { ppc = +p.ppc; _ppc = ppc; }
+      if ([1,2,3,4].includes(+p.nc))        { nc  = +p.nc;  _nc  = nc;  }
+    }
     const r = localStorage.getItem('kotc3_roster');
     if (r) {
       const pr = JSON.parse(r);
@@ -4819,53 +4682,28 @@ function loadState() {
         }
       });
     }
-
+    const sc = localStorage.getItem('kotc3_scores');
+    if (sc) {
+      const ps = JSON.parse(sc);
+      if (Array.isArray(ps)) ps.forEach((court,ci) => {
+        if (ci >= 4 || !Array.isArray(court)) return;
+        court.forEach((row,mi) => {
+          if (mi >= 5 || !Array.isArray(row)) return;
+          row.forEach((val,ri) => {
+            if (ri < ppc && scores[ci]?.[mi]) scores[ci][mi][ri] = (val === null || val === undefined) ? null : Number(val);
+          });
+        });
+      });
+    }
+    const ds = localStorage.getItem('kotc3_divscores');
+    if (ds) { const pd=JSON.parse(ds); if(pd) DIV_KEYS.forEach(k=>{if(pd[k]) divScores[k]=pd[k];}); }
+    const dr = localStorage.getItem('kotc3_divroster');
     const mt = localStorage.getItem('kotc3_meta');
     if (mt) { try { tournamentMeta = JSON.parse(mt); } catch(e){} }
-
+    if (dr) { const pd=JSON.parse(dr); if(pd) DIV_KEYS.forEach(k=>{if(pd[k]) divRoster[k]=pd[k];}); }
     const hs = localStorage.getItem('kotc3_eventlog');
     if (hs) { try { tournamentHistory = JSON.parse(hs) || []; } catch(e){} }
   } catch(e){}
-}
-
-function migrateToNewFormat() {
-  // Migrate old v1.1 format to new v2.0 formatState
-  try {
-    const cfg = localStorage.getItem('kotc3_cfg');
-    const sc = localStorage.getItem('kotc3_scores');
-    const ds = localStorage.getItem('kotc3_divscores');
-    const dr = localStorage.getItem('kotc3_divroster');
-
-    // Initialize with old data if found
-    if (cfg) {
-      const p = JSON.parse(cfg);
-      if ([4,5].includes(+p.ppc))           { ppc = +p.ppc; _ppc = ppc; }
-      if ([1,2,3,4].includes(+p.nc))        { nc  = +p.nc;  _nc  = nc;  }
-      formatState.KING.ppc = ppc;
-      formatState.KING.nc = nc;
-    }
-    if (sc) {
-      const ps = JSON.parse(sc);
-      if (Array.isArray(ps)) {
-        formatState.KING.scores = ps;
-      }
-    }
-    if (ds) {
-      const pd = JSON.parse(ds);
-      if (pd) {
-        formatState.KING.divScores = pd;
-      }
-    }
-    if (dr) {
-      const pd = JSON.parse(dr);
-      if (pd) {
-        formatState.KING.divRoster = pd;
-      }
-    }
-
-    // Sync to global variables
-    syncFormatStateToKing();
-  } catch(e) {}
 }
 
 // ── Finish & archive tournament ────────────────────────────
@@ -5012,7 +4850,7 @@ function buildNav() {
   const logo = document.createElement('div');
   logo.id = 'nav-logo'; // сохраняем id — инжект base64 делает getElementById('nav-logo').src
   logo.className = 'nav-logo-container';
-  logo.innerHTML = `<div class="brand-main">ЛЮТЫЕ ПЛЯЖНИКИ !!</div><div class="brand-sub">${getCurrentFormat().label}</div>`;
+  logo.innerHTML = '<div class="brand-main">ЛЮТЫЕ ПЛЯЖНИКИ !!</div><div class="brand-sub">King of the Court</div>';
   top.appendChild(logo);
 
   const spacer = document.createElement('div');
@@ -5064,61 +4902,6 @@ function buildNav() {
   });
   nav.appendChild(top);
 
-  // ── Format selector pills ──────────────────────────────────
-  const formatRow = document.createElement('div');
-  formatRow.className = 'nav-pills-row';
-  formatRow.style.cssText = 'background: rgba(0,0,0,0.3); padding: 4px 8px;';
-
-  Object.keys(FORMAT_CONFIGS).forEach(fmt => {
-    const cfg = FORMAT_CONFIGS[fmt];
-    const btn = document.createElement('button');
-    btn.className = 'format-selector-btn' + (activeFormat === fmt ? ' active' : '');
-    btn.textContent = `${cfg.icon} ${cfg.label}`;
-    btn.style.cssText = `
-      padding: 6px 12px;
-      margin: 0 2px;
-      border: 1px solid rgba(255,255,255,0.3);
-      background: rgba(255,255,255,0.1);
-      color: inherit;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
-      transition: all 0.2s;
-    `;
-    btn.addEventListener('mouseover', () => {
-      if (activeFormat !== fmt) btn.style.background = 'rgba(255,255,255,0.2)';
-    });
-    btn.addEventListener('mouseout', () => {
-      if (activeFormat !== fmt) btn.style.background = 'rgba(255,255,255,0.1)';
-    });
-    btn.addEventListener('click', () => switchFormat(fmt));
-
-    if (activeFormat === fmt) {
-      btn.style.background = 'rgba(255,215,0,0.3)';
-      btn.style.borderColor = 'rgba(255,215,0,0.8)';
-      btn.style.color = '#FFD700';
-    }
-
-    formatRow.appendChild(btn);
-  });
-
-  nav.appendChild(formatRow);
-
-  // ── Ряд пиллов: формат-зависимая навигация ─────────────
-  if (activeFormat === 'KING') {
-    buildKingNav(nav);
-  } else if (activeFormat === 'PAIRS') {
-    buildPairsNav(nav);
-  } else if (activeFormat === 'ROUND_ROBIN') {
-    buildRoundRobinNav(nav);
-  }
-
-  syncNavActive();
-  syncDivLock();
-}
-
-function buildKingNav(nav) {
   // ── Ряд пиллов: корты + разделитель + дивизионы ─────────
   const row = document.createElement('div');
   row.className = 'nav-pills-row';
@@ -5153,60 +4936,8 @@ function buildKingNav(nav) {
   });
 
   nav.appendChild(row);
-}
-
-function buildPairsNav(nav) {
-  // Navigation for PAIRS format: category tabs (mens, womens, mixed)
-  const row = document.createElement('div');
-  row.className = 'nav-pills-row';
-
-  const categories = [
-    { id: 'mens', label: '👨 Мужской', icon: '👨' },
-    { id: 'womens', label: '👩 Женский', icon: '👩' },
-    { id: 'mixed', label: '👫 Микст', icon: '👫' }
-  ];
-
-  categories.forEach((cat) => {
-    const p = document.createElement('button');
-    p.className = 'nav-pill' + (formatState.PAIRS.activePairsCategory === cat.id ? ' active' : '');
-    p.dataset.tab = `pairs_${cat.id}`;
-    p.textContent = cat.label;
-    p.style.minWidth = '80px';
-    p.addEventListener('click', () => {
-      formatState.PAIRS.activePairsCategory = cat.id;
-      switchTab(`pairs_${cat.id}`);
-    });
-    row.appendChild(p);
-  });
-
-  nav.appendChild(row);
-}
-
-function buildRoundRobinNav(nav) {
-  // Navigation for ROUND_ROBIN format: category tabs (mens, womens, mixed)
-  const row = document.createElement('div');
-  row.className = 'nav-pills-row';
-
-  const categories = [
-    { id: 'mens', label: '👨 Мужской', icon: '👨' },
-    { id: 'womens', label: '👩 Женский', icon: '👩' },
-    { id: 'mixed', label: '👫 Микст', icon: '👫' }
-  ];
-
-  categories.forEach((cat) => {
-    const p = document.createElement('button');
-    p.className = 'nav-pill' + (formatState.ROUND_ROBIN.activeRRCategory === cat.id ? ' active' : '');
-    p.dataset.tab = `rr_${cat.id}`;
-    p.textContent = cat.label;
-    p.style.minWidth = '80px';
-    p.addEventListener('click', () => {
-      formatState.ROUND_ROBIN.activeRRCategory = cat.id;
-      switchTab(`rr_${cat.id}`);
-    });
-    row.appendChild(p);
-  });
-
-  nav.appendChild(row);
+  syncNavActive();
+  syncDivLock();
 }
 
 function syncNavActive() {
@@ -5227,20 +4958,19 @@ function buildScreens() {
   const sc = document.getElementById('screens');
   sc.innerHTML = '';
 
-  const cfg = getCurrentFormat();
-  const screenIds = cfg.screensList || [];
-
-  screenIds.forEach(id => {
+  // Corт screens (0..3, always created, hidden for ci >= nc)
+  for (let ci = 0; ci < 4; ci++) {
     const s = document.createElement('div');
-    s.className = 'screen';
-    s.id = `screen-${id}`;
+    s.className = 'screen'; s.id = `screen-${ci}`;
+    s.innerHTML = ci < nc ? renderCourt(ci) : '';
+    sc.appendChild(s);
+  }
 
-    // Pre-render KING court screens
-    if (activeFormat === 'KING' && !isNaN(parseInt(id))) {
-      const ci = parseInt(id);
-      s.innerHTML = ci < nc ? renderCourt(ci) : '';
-    }
-
+  // Named screens
+  const named = ['home','players','svod','hard','advance','medium','lite','stats','roster'];
+  named.forEach(id => {
+    const s = document.createElement('div');
+    s.className = 'screen'; s.id = `screen-${id}`;
     sc.appendChild(s);
   });
 }
@@ -5273,14 +5003,10 @@ function safeRender() {
 // ════════════════════════════════════════════════════════════
 async function switchTab(id) {
   closeDropdown();
-
-  // Format-specific tab validation
-  if (activeFormat === 'KING') {
-    if (typeof id === 'string' && DIV_KEYS.includes(id) && !activeDivKeys().includes(id)) {
-      id = activeDivKeys()[0] || 0;
-    }
+  // Если запрошен неактивный дивизион — перенаправляем на первый активный
+  if (typeof id === 'string' && DIV_KEYS.includes(id) && !activeDivKeys().includes(id)) {
+    id = activeDivKeys()[0] || 0;
   }
-
   const prevTabId = activeTabId;
   activeTabId = id;
 
@@ -5289,104 +5015,39 @@ async function switchTab(id) {
   const screen = document.getElementById(`screen-${id}`);
   if (!screen) return;
 
-  // Re-render content on demand — common screens
+  // Re-render content on demand
   if (id === 'home')    screen.innerHTML = renderHome();
   if (id === 'players') { playersSearch=''; screen.innerHTML = renderPlayers(); }
-  if (id === 'stats')   screen.innerHTML = renderStats();
-
-  // Format-specific screens
-  if (activeFormat === 'KING') {
-    if (id === 'svod')    screen.innerHTML = renderSvod();
-    if (id === 'roster') {
-      if (!rosterUnlocked) {
-        screen.classList.add('active');
-        syncNavActive();
-        const ok = await showPasswordPrompt();
-        if (!ok) { activeTabId = prevTabId; switchTab(prevTabId || 'svod'); return; }
-      }
-      historyFilter = 'all';
+  if (id === 'svod')    screen.innerHTML = renderSvod();
+  if (id === 'roster') {
+    if (!rosterUnlocked) {
+      screen.classList.add('active');
+      syncNavActive();
+      const ok = await showPasswordPrompt();
+      if (!ok) { activeTabId = prevTabId; switchTab(prevTabId || 'svod'); return; }
+    }
+    historyFilter = 'all'; // сбросить фильтр при открытии ростера
+    try {
       screen.innerHTML = renderRoster();
-    }
-    if (id === 'hard' || id === 'advance' || id === 'medium' || id === 'lite') {
-      if (!hasRound5Score()) {
-        showToast(`🔒 Добавьте очки в раунде ${ppc} на кортах 1–${nc}`);
-        activeTabId = prevTabId;
-        syncNavActive();
-        return;
-      }
-      updateDivisions();
-    }
-    // Court screens
-    if (!isNaN(parseInt(id))) {
-      const ci = parseInt(id);
-      if (ci < nc) {
-        screen.innerHTML = renderCourt(ci);
-      }
+    } catch(e) {
+      console.error('❌ Ошибка рендеринга ростера:', e);
+      screen.innerHTML = `<div style="padding:20px;color:red"><h2>⚠️ Ошибка</h2><p>${e.message}</p><details><pre>${e.stack}</pre></details></div>`;
     }
   }
-
-  if (activeFormat === 'PAIRS') {
-    if (id === 'pairs_bracket') screen.innerHTML = renderPairsBracketPlaceholder();
-    if (id === 'pairs_stats')   screen.innerHTML = renderPairsStatsPlaceholder();
-    if (id === 'pairs_roster')  screen.innerHTML = renderPairsRosterPlaceholder();
-    // Category tabs
-    if (String(id).startsWith('pairs_')) {
-      const cat = String(id).replace('pairs_', '');
-      if (['mens', 'womens', 'mixed'].includes(cat)) {
-        formatState.PAIRS.activePairsCategory = cat;
-        screen.innerHTML = renderPairsCategoryPlaceholder(cat);
-      }
+  if (id === 'stats')  screen.innerHTML = renderStats();
+  if (id === 'hard' || id === 'advance' || id === 'medium' || id === 'lite') {
+    if (!hasRound5Score()) {
+      showToast(`🔒 Добавьте очки в раунде ${ppc} на кортах 1–${nc}`);
+      activeTabId = prevTabId;
+      syncNavActive();
+      return;
     }
-  }
-
-  if (activeFormat === 'ROUND_ROBIN') {
-    if (id === 'rr_standings') screen.innerHTML = renderRRStandingsPlaceholder();
-    if (id === 'rr_stats')     screen.innerHTML = renderRRStatsPlaceholder();
-    if (id === 'rr_roster')    screen.innerHTML = renderRRRosterPlaceholder();
-    // Category tabs
-    if (String(id).startsWith('rr_')) {
-      const cat = String(id).replace('rr_', '');
-      if (['mens', 'womens', 'mixed'].includes(cat)) {
-        formatState.ROUND_ROBIN.activeRRCategory = cat;
-        screen.innerHTML = renderRRCategoryPlaceholder(cat);
-      }
-    }
+    updateDivisions();
   }
 
   screen.classList.add('active');
   syncNavActive();
   window.scrollTo({top:0, behavior:'smooth'});
-}
-
-// Placeholder renderers for PAIRS format
-function renderPairsBracketPlaceholder() {
-  return '<div style="padding: 20px; text-align: center; color: #999;">🚧 Плей-офф сетка (в разработке)</div>';
-}
-function renderPairsStatsPlaceholder() {
-  return '<div style="padding: 20px; text-align: center; color: #999;">🚧 Статистика пар (в разработке)</div>';
-}
-function renderPairsRosterPlaceholder() {
-  return '<div style="padding: 20px; text-align: center; color: #999;">🚧 Управление парами (в разработке)</div>';
-}
-
-// Placeholder renderers for ROUND_ROBIN format
-function renderRRStandingsPlaceholder() {
-  return '<div style="padding: 20px; text-align: center; color: #999;">🚧 Таблица круговой системы (в разработке)</div>';
-}
-function renderRRStatsPlaceholder() {
-  return '<div style="padding: 20px; text-align: center; color: #999;">🚧 Статистика RR (в разработке)</div>';
-}
-function renderRRRosterPlaceholder() {
-  return '<div style="padding: 20px; text-align: center; color: #999;">🚧 Управление RR (в разработке)</div>';
-}
-function renderRRCategoryPlaceholder(category) {
-  const categoryLabels = { mens: 'Мужской', womens: 'Женский', mixed: 'Микст' };
-  return `<div style="padding: 20px; text-align: center; color: #999;">🚧 Круговая система ${categoryLabels[category] || category} (в разработке)</div>`;
-}
-
-function renderPairsCategoryPlaceholder(category) {
-  const categoryLabels = { mens: 'Мужской', womens: 'Женский', mixed: 'Микст' };
-  return `<div style="padding: 20px; text-align: center; color: #999;">🚧 Пары 2×2 ${categoryLabels[category] || category} (в разработке)</div>`;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -5443,20 +5104,25 @@ function autoDistribute() {
 // через «ТУРНИРЫ РАСПИСАНИЕ» (submitTournamentForm)
 
 function applyRoster() {
-  document.querySelectorAll('.rc-inp').forEach(inp => {
-    const ci = +inp.dataset.ci, g = inp.dataset.g, pi = +inp.dataset.pi;
-    if (!isNaN(ci) && ci < 4) {
-      ALL_COURTS[ci][g][pi] = inp.value.trim() || (g==='men' ? `М${pi+1}` : `Ж${pi+1}`);
+  try {
+    document.querySelectorAll('.rc-inp').forEach(inp => {
+      const ci = +inp.dataset.ci, g = inp.dataset.g, pi = +inp.dataset.pi;
+      if (!isNaN(ci) && ci < 4) {
+        ALL_COURTS[ci][g][pi] = inp.value.trim() || (g==='men' ? `М${pi+1}` : `Ж${pi+1}`);
+      }
+    });
+    // Refresh court screens
+    for (let ci = 0; ci < nc; ci++) {
+      const s = document.getElementById(`screen-${ci}`);
+      if (s) s.innerHTML = renderCourt(ci);
     }
-  });
-  // Refresh court screens
-  for (let ci = 0; ci < nc; ci++) {
-    const s = document.getElementById(`screen-${ci}`);
-    if (s) s.innerHTML = renderCourt(ci);
+    updateDivisions();
+    saveState();
+    showToast('✅ Ростер сохранён');
+  } catch(e) {
+    console.error('❌ Ошибка при сохранении ростера:', e);
+    showToast(`⚠️ Ошибка: ${e.message}`);
   }
-  updateDivisions();
-  saveState();
-  showToast('✅ Ростер сохранён');
 }
 
 async function clearRoster() {
