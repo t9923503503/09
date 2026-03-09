@@ -151,10 +151,11 @@ class DoubleElimTournament {
 
     this.seeding.byesCount = byesCount;
 
-    // 4. Assign seeds and byes to top teams
+    // 4. Assign seeds and byes to bottom teams
+    // Bottom seeds get bye (weaker teams need fewer rounds to reach later stages)
     this.teams.forEach((team, idx) => {
       team.seed = idx + 1;
-      team.bye = idx < byesCount; // Top teams get bye
+      team.bye = idx >= (this.teams.length - byesCount); // Bottom seeds (weaker) get bye
     });
 
     // 5. Build seeding order using standard seeding algorithm
@@ -276,40 +277,55 @@ class DoubleElimTournament {
 
   /**
    * Assign teams to first round of Winners Bracket
+   * Properly handles bye teams (they skip round 1)
    * @private
    */
   _assignTeamsToFirstRound(matches, bracketSize) {
     const firstRoundMatches = matches.filter(m => m.round === 1);
-    const seedOrder = this.seeding.seedOrder;
 
-    // Match seeds with bye
-    let seedIdx = 0;
+    // Separate bye and non-bye teams
+    const nonByeTeams = this.teams.filter(t => !t.bye);
+    const byeTeams = this.teams.filter(t => t.bye);
+
+    // Build seeding order without bye teams
+    const seedOrder = this.seeding.seedOrder.filter(
+      id => this.teams.find(t => t.id === id && !t.bye)
+    );
+
+    // Step 1: Assign non-bye teams to first round matches
     let matchIdx = 0;
-
-    for (let i = 0; i < seedOrder.length; i += 2) {
-      if (matchIdx >= firstRoundMatches.length) break;
-
-      const team1 = this.teams.find(t => t.id === seedOrder[i]);
-      const team2 = seedOrder[i + 1]
-        ? this.teams.find(t => t.id === seedOrder[i + 1])
-        : null;
-
+    for (let i = 0; i < seedOrder.length && matchIdx < firstRoundMatches.length; i += 2) {
       const match = firstRoundMatches[matchIdx];
+      const team1 = this.teams.find(t => t.id === seedOrder[i]);
+      const team2 = this.teams.find(t => t.id === seedOrder[i + 1]);
 
       if (team1) {
         match.team_a_id = team1.id;
-        if (!team1.bye) match.status = "pending";
+        match.status = "pending";
       }
 
       if (team2) {
         match.team_b_id = team2.id;
-        if (!team2.bye) match.status = "pending";
-      } else if (team1?.bye) {
-        // Bye: only one team, automatic advance
-        match.isBye = true;
-        match.winner_id = team1.id;
-        match.status = "completed";
+        match.status = "pending";
+      } else if (team1) {
+        // Unpaired team without bye shouldn't happen in standard bracket
+        // but handle edge case
+        match.team_a_id = team1.id;
+        match.status = "pending";
       }
+
+      matchIdx++;
+    }
+
+    // Step 2: Mark remaining round 1 matches as byes (for bye teams)
+    while (matchIdx < firstRoundMatches.length && byeTeams.length > 0) {
+      const match = firstRoundMatches[matchIdx];
+      const byeTeam = byeTeams.shift();
+
+      match.team_a_id = byeTeam.id;
+      match.isBye = true;
+      match.winner_id = byeTeam.id;  // Auto-advance
+      match.status = "completed";
 
       matchIdx++;
     }
