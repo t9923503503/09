@@ -5156,15 +5156,26 @@ function buildKingNav(nav) {
 }
 
 function buildPairsNav(nav) {
-  // Temporary: placeholder navigation for PAIRS format
+  // Navigation for PAIRS format: category tabs (mens, womens, mixed)
   const row = document.createElement('div');
   row.className = 'nav-pills-row';
 
-  ['Мужской', 'Женский', 'Микст'].forEach((label, idx) => {
+  const categories = [
+    { id: 'mens', label: '👨 Мужской', icon: '👨' },
+    { id: 'womens', label: '👩 Женский', icon: '👩' },
+    { id: 'mixed', label: '👫 Микст', icon: '👫' }
+  ];
+
+  categories.forEach((cat) => {
     const p = document.createElement('button');
-    p.className = 'nav-pill' + (idx === 0 ? ' active' : '');
-    p.textContent = label;
-    p.addEventListener('click', () => showToast('🚧 PAIRS формат скоро'));
+    p.className = 'nav-pill' + (formatState.PAIRS.activePairsCategory === cat.id ? ' active' : '');
+    p.dataset.tab = `pairs_${cat.id}`;
+    p.textContent = cat.label;
+    p.style.minWidth = '80px';
+    p.addEventListener('click', () => {
+      formatState.PAIRS.activePairsCategory = cat.id;
+      switchTab(`pairs_${cat.id}`);
+    });
     row.appendChild(p);
   });
 
@@ -5172,15 +5183,26 @@ function buildPairsNav(nav) {
 }
 
 function buildRoundRobinNav(nav) {
-  // Temporary: placeholder navigation for ROUND_ROBIN format
+  // Navigation for ROUND_ROBIN format: category tabs (mens, womens, mixed)
   const row = document.createElement('div');
   row.className = 'nav-pills-row';
 
-  ['Мужской', 'Женский', 'Микст'].forEach((label, idx) => {
+  const categories = [
+    { id: 'mens', label: '👨 Мужской', icon: '👨' },
+    { id: 'womens', label: '👩 Женский', icon: '👩' },
+    { id: 'mixed', label: '👫 Микст', icon: '👫' }
+  ];
+
+  categories.forEach((cat) => {
     const p = document.createElement('button');
-    p.className = 'nav-pill' + (idx === 0 ? ' active' : '');
-    p.textContent = label;
-    p.addEventListener('click', () => showToast('🚧 ROUND ROBIN формат скоро'));
+    p.className = 'nav-pill' + (formatState.ROUND_ROBIN.activeRRCategory === cat.id ? ' active' : '');
+    p.dataset.tab = `rr_${cat.id}`;
+    p.textContent = cat.label;
+    p.style.minWidth = '80px';
+    p.addEventListener('click', () => {
+      formatState.ROUND_ROBIN.activeRRCategory = cat.id;
+      switchTab(`rr_${cat.id}`);
+    });
     row.appendChild(p);
   });
 
@@ -5307,12 +5329,28 @@ async function switchTab(id) {
     if (id === 'pairs_bracket') screen.innerHTML = renderPairsBracketPlaceholder();
     if (id === 'pairs_stats')   screen.innerHTML = renderPairsStatsPlaceholder();
     if (id === 'pairs_roster')  screen.innerHTML = renderPairsRosterPlaceholder();
+    // Category tabs
+    if (String(id).startsWith('pairs_')) {
+      const cat = String(id).replace('pairs_', '');
+      if (['mens', 'womens', 'mixed'].includes(cat)) {
+        formatState.PAIRS.activePairsCategory = cat;
+        screen.innerHTML = renderPairsCategoryPlaceholder(cat);
+      }
+    }
   }
 
   if (activeFormat === 'ROUND_ROBIN') {
     if (id === 'rr_standings') screen.innerHTML = renderRRStandingsPlaceholder();
     if (id === 'rr_stats')     screen.innerHTML = renderRRStatsPlaceholder();
     if (id === 'rr_roster')    screen.innerHTML = renderRRRosterPlaceholder();
+    // Category tabs
+    if (String(id).startsWith('rr_')) {
+      const cat = String(id).replace('rr_', '');
+      if (['mens', 'womens', 'mixed'].includes(cat)) {
+        formatState.ROUND_ROBIN.activeRRCategory = cat;
+        screen.innerHTML = renderRRCategoryPlaceholder(cat);
+      }
+    }
   }
 
   screen.classList.add('active');
@@ -5340,6 +5378,15 @@ function renderRRStatsPlaceholder() {
 }
 function renderRRRosterPlaceholder() {
   return '<div style="padding: 20px; text-align: center; color: #999;">🚧 Управление RR (в разработке)</div>';
+}
+function renderRRCategoryPlaceholder(category) {
+  const categoryLabels = { mens: 'Мужской', womens: 'Женский', mixed: 'Микст' };
+  return `<div style="padding: 20px; text-align: center; color: #999;">🚧 Круговая система ${categoryLabels[category] || category} (в разработке)</div>`;
+}
+
+function renderPairsCategoryPlaceholder(category) {
+  const categoryLabels = { mens: 'Мужской', womens: 'Женский', mixed: 'Микст' };
+  return `<div style="padding: 20px; text-align: center; color: #999;">🚧 Пары 2×2 ${categoryLabels[category] || category} (в разработке)</div>`;
 }
 
 // ════════════════════════════════════════════════════════════
