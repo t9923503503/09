@@ -1844,6 +1844,11 @@ button.player-tap:active{opacity:.6}
   font-size:10px;display:flex;align-items:center;justify-content:center;
   transition:all .18s;flex-shrink:0;touch-action:manipulation}
 .arch-del-btn:hover{background:rgba(233,69,96,.22);color:var(--red);border-color:var(--red)}
+.arch-restore-btn{height:22px;padding:0 8px;border-radius:5px;border:1px solid rgba(77,168,218,.3);
+  background:rgba(77,168,218,.1);color:#4DA8DA;cursor:pointer;
+  font-size:10px;display:flex;align-items:center;gap:3px;
+  transition:all .18s;flex-shrink:0;touch-action:manipulation;white-space:nowrap}
+.arch-restore-btn:hover{background:rgba(77,168,218,.22);border-color:#4DA8DA}
 .arch-meta{display:flex;gap:5px;flex-wrap:wrap}
 .arch-chip{font-size:10px;padding:3px 8px;border-radius:6px;
   background:rgba(255,255,255,.05);border:1px solid #2a2a40;color:var(--muted)}
@@ -4767,6 +4772,58 @@ async function finishTournament() {
   }
 }
 
+async function restoreFromArchive(id) {
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem('kotc3_history') || '[]'); } catch(e){}
+  const snap = history.find(t => t.id === id);
+  if (!snap) { showToast('❌ Запись не найдена'); return; }
+
+  const confirmed = await showConfirm(
+    `Восстановить турнир «${snap.name}»?\n\nРостер игроков будет загружен из архива.\nТекущие результаты и очки будут сброшены.`
+  );
+  if (!confirmed) return;
+
+  // 1. Restore config
+  if ([4,5].includes(+snap.ppc)) { ppc = +snap.ppc; _ppc = ppc; }
+  if ([1,2,3,4].includes(+snap.nc))  { nc  = +snap.nc;  _nc  = nc;  }
+
+  // 2. Clear all court rosters
+  for (let ci = 0; ci < 4; ci++) {
+    ALL_COURTS[ci].men   = Array(ppc).fill('');
+    ALL_COURTS[ci].women = Array(ppc).fill('');
+  }
+
+  // 3. Rebuild rosters from archived players
+  const courtPos = {};
+  (snap.players || []).forEach(p => {
+    const ci = COURT_META.findIndex(m => m.name === p.courtName);
+    if (ci < 0 || ci >= nc) return;
+    const g = p.gender === 'M' ? 'men' : 'women';
+    if (!courtPos[ci]) courtPos[ci] = { men: 0, women: 0 };
+    const pos = courtPos[ci][g];
+    if (pos < ppc) {
+      ALL_COURTS[ci][g][pos] = p.name;
+      courtPos[ci][g]++;
+    }
+  });
+
+  // 4. Reset all scores
+  scores    = makeBlankScores();
+  divScores = makeBlankDivScores();
+  divRoster = makeBlankDivRoster();
+  tournamentHistory = [];
+
+  // 5. Restore tournament metadata
+  tournamentMeta = { name: snap.name, date: snap.date };
+
+  // 6. Persist and re-render
+  saveState();
+  localStorage.setItem('kotc3_eventlog', JSON.stringify([]));
+  buildAll();
+  switchTab(0);
+  showToast('✅ Турнир восстановлен из архива!');
+}
+
 async function resetTournament() {
   if (!await showConfirm('Сбросить ВСЕ результаты?\n\nРостер сохранится, все очки обнулятся.')) return;
   scores    = makeBlankScores();
@@ -6667,6 +6724,7 @@ function renderHome() {
       </div>
       <div class="arch-badges">
         <span class="arch-src ${isApp?'app':'manual'}">${isApp?'📱 Приложение':'✏️ Вручную'}</span>
+        ${isApp?`<button class="arch-restore-btn" onclick="restoreFromArchive(${t.id})" title="Восстановить сессию">↩ Восстановить</button>`:''}
         ${!isApp?`<button class="arch-del-btn" onclick="deleteManualTournament(${t.id})" title="Удалить">✕</button>`:''}
       </div>
     </div>
