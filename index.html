@@ -53,6 +53,17 @@ body.light .seg-btn.on{background:#C8960C;border-color:#C8960C;color:#fff}
 body.light .dd-menu{background:#fff;border-color:#D0D0D0}
 body.light .dd-item:hover,.dd-item:active{background:#F0F0F0}
 body.light .sc-input,.light select,.light textarea{background:#F0F0F0;border-color:#CCC;color:#1a1a1a}
+body.light .rc-block{background:#fff;border-color:#D0D0D0}
+body.light .rc-hdr{background:#F8F8F8;border-color:#E0E0E0}
+body.light .rc-col-hdr{background:#F0F0F0;color:#666;border-color:#E8E8E8}
+body.light .rc-col-hdr.m{background:#F5F5F5}
+body.light .rc-col-hdr.w{background:#EEEEEE}
+body.light .rc-entry{border-top-color:#E8E8E8}
+body.light .rc-inp{background:#fff;border-bottom:1px solid #D0D0D0;color:#1a1a1a}
+body.light .rc-inp::placeholder{color:#999}
+body.light .rc-inp:focus{border-bottom-color:#C8960C;background:#FFFBF0}
+body.light .rc-num{color:#999}
+body.light .rc-warn{color:#D32F2F}
 body.light .btn-main{background:#C8960C;color:#fff}
 body.light .btn-sec{background:#E8E8E8;color:#1a1a1a;border-color:#CCC}
 body.light button.player-tap{background:#fff!important;border-color:#CCC!important;color:#1a1a1a!important}
@@ -83,6 +94,16 @@ body.light .trn-prog-bar{background:#E0E0E0}
 body.light .td-btn-reg{background:#C8960C;color:#fff}
 body.light .td-btn-reg:hover{background:#B07A00}
 body.light .td-btn-reg.wait{background:#F0F0F0;border-color:#CCC;color:#666}
+body.light .svod-table thead th{background:#F5F5F5;border-bottom-color:#D0D0D0;color:#666}
+body.light .svod-table tbody tr{border-bottom-color:#E8E8E8}
+body.light .svod-table tbody tr:hover{background:#F8F8F8}
+body.light .svod-table td{color:#1a1a1a}
+body.light .td-name{color:#1a1a1a;font-weight:700}
+body.light .td-court{color:#888}
+body.light .td-avg{color:#888}
+body.light .svod-div-sep-inner{color:#999}
+body.light .player-tap{color:#1976D2;text-decoration:none}
+body.light .player-tap:hover{color:#0d47a1}
 body.light .home-banner{background:linear-gradient(135deg,#fff 0%,#FFF8E8 100%);border-color:#D0D0D0}
 body.light .home-banner-title{color:#1a1a1a}
 body.light .home-banner-sub{color:#666}
@@ -99,6 +120,25 @@ body.light .plr-banner-pill{background:rgba(200,150,12,.1);border-color:rgba(200
 body.light .plr-banner-arrow{background:rgba(200,150,12,.1);border-color:rgba(200,150,12,.25);color:#B07A00}
 body.light .plr-banner:hover .plr-banner-arrow{background:#C8960C;color:#fff;border-color:#C8960C}
 body.light .plr-av{border-color:#fff;background:linear-gradient(135deg,#E8E0D0,#D8D0C0)!important;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+body.light .plr-pod-col{color:#1a1a1a}
+body.light .plr-pod-name{color:#1a1a1a;font-weight:700}
+body.light .plr-pod-col.p1{background:linear-gradient(180deg,rgba(200,150,12,.15),rgba(200,150,12,.05))}
+body.light .plr-pod-col.p2{background:linear-gradient(180deg,rgba(150,150,150,.15),rgba(150,150,150,.05))}
+body.light .plr-pod-col.p3{background:linear-gradient(180deg,rgba(180,100,50,.15),rgba(180,100,50,.05))}
+body.light .plr-sort-btn{background:#F5F5F5;border-color:#D0D0D0;color:#1a1a1a}
+body.light .plr-sort-btn.active{background:rgba(200,150,12,.15);border-color:rgba(200,150,12,.4);color:#B07A00}
+body.light .plr-wrap{padding:14px 12px 40px}
+body.light .plr-tabs{background:rgba(200,150,12,.05);border-color:#E0E0E0}
+body.light .plr-tab{background:#F5F5F5;border-color:#D0D0D0;color:#1a1a1a}
+body.light .plr-tab.active{background:#C8960C;color:#fff;box-shadow:0 3px 10px rgba(200,150,12,.25)}
+body.light .plr-stat-chip{background:#fff;border-color:#D0D0D0;color:#1a1a1a}
+body.light .plr-stat-chip-val{color:#B07A00}
+body.light .plr-stat-chip-lbl{color:#888}
+body.light .plr-item{background:#FFFFFF;border-color:#E8E8E8}
+body.light .plr-item:hover{background:#F8F8F8;border-color:#D0D0D0}
+body.light .plr-item-name{color:#1a1a1a;font-weight:700}
+body.light .plr-item-meta{color:#666}
+body.light .plr-item-meta span{color:#888}
 body.light .trn-prog-bar{background:#E0E0E0}
 body.light .btn-reg{background:#C8960C;color:#fff;border-color:#C8960C}
 body.light ::placeholder{color:#999}
@@ -5084,7 +5124,12 @@ async function switchTab(id) {
       if (!ok) { activeTabId = prevTabId; switchTab(prevTabId || 'svod'); return; }
     }
     historyFilter = 'all'; // сбросить фильтр при открытии ростера
-    screen.innerHTML = renderRoster();
+    try {
+      screen.innerHTML = renderRoster();
+    } catch(e) {
+      console.error('❌ Ошибка рендеринга ростера:', e);
+      screen.innerHTML = `<div style="padding:20px;color:red"><h2>⚠️ Ошибка</h2><p>${e.message}</p><details><pre>${e.stack}</pre></details></div>`;
+    }
   }
   if (id === 'stats')  screen.innerHTML = renderStats();
   if (id === 'hard' || id === 'advance' || id === 'medium' || id === 'lite') {
@@ -5156,20 +5201,25 @@ function autoDistribute() {
 // через «ТУРНИРЫ РАСПИСАНИЕ» (submitTournamentForm)
 
 function applyRoster() {
-  document.querySelectorAll('.rc-inp').forEach(inp => {
-    const ci = +inp.dataset.ci, g = inp.dataset.g, pi = +inp.dataset.pi;
-    if (!isNaN(ci) && ci < 4) {
-      ALL_COURTS[ci][g][pi] = inp.value.trim() || (g==='men' ? `М${pi+1}` : `Ж${pi+1}`);
+  try {
+    document.querySelectorAll('.rc-inp').forEach(inp => {
+      const ci = +inp.dataset.ci, g = inp.dataset.g, pi = +inp.dataset.pi;
+      if (!isNaN(ci) && ci < 4) {
+        ALL_COURTS[ci][g][pi] = inp.value.trim() || (g==='men' ? `М${pi+1}` : `Ж${pi+1}`);
+      }
+    });
+    // Refresh court screens
+    for (let ci = 0; ci < nc; ci++) {
+      const s = document.getElementById(`screen-${ci}`);
+      if (s) s.innerHTML = renderCourt(ci);
     }
-  });
-  // Refresh court screens
-  for (let ci = 0; ci < nc; ci++) {
-    const s = document.getElementById(`screen-${ci}`);
-    if (s) s.innerHTML = renderCourt(ci);
+    updateDivisions();
+    saveState();
+    showToast('✅ Ростер сохранён');
+  } catch(e) {
+    console.error('❌ Ошибка при сохранении ростера:', e);
+    showToast(`⚠️ Ошибка: ${e.message}`);
   }
-  updateDivisions();
-  saveState();
-  showToast('✅ Ростер сохранён');
 }
 
 async function clearRoster() {

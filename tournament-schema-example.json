@@ -1,0 +1,452 @@
+{
+  "comment": "Complete Double Elimination Tournament Structure - Full Example",
+  "tournament": {
+    "id": "t_2026_03_09_beach_vol",
+    "name": "Открытый чемпионат пляжного волейбола 2026",
+    "format": "DOUBLE_ELIMINATION",
+    "status": "running",
+    "createdAt": "2026-03-09T12:00:00Z",
+    "updatedAt": "2026-03-09T14:30:00Z",
+
+    "teams": [
+      {
+        "id": "pair_001",
+        "name": "Иван & Петр",
+        "players": [
+          {
+            "id": "p1",
+            "name": "Иван Петров",
+            "level": 5,
+            "avatar": "https://api.example.com/avatar/p1.jpg"
+          },
+          {
+            "id": "p2",
+            "name": "Петр Иванов",
+            "level": 4,
+            "avatar": "https://api.example.com/avatar/p2.jpg"
+          }
+        ],
+        "trueSkillIndex": 9,
+        "seed": 1,
+        "bye": true,
+        "winLossRecord": {
+          "wins": 2,
+          "losses": 0
+        }
+      },
+      {
+        "id": "pair_002",
+        "name": "Сергей & Алексей",
+        "players": [
+          {
+            "id": "p3",
+            "name": "Сергей Сидоров",
+            "level": 5,
+            "avatar": "https://api.example.com/avatar/p3.jpg"
+          },
+          {
+            "id": "p4",
+            "name": "Алексей Петров",
+            "level": 3,
+            "avatar": "https://api.example.com/avatar/p4.jpg"
+          }
+        ],
+        "trueSkillIndex": 8,
+        "seed": 2,
+        "bye": true,
+        "winLossRecord": {
+          "wins": 1,
+          "losses": 1
+        }
+      },
+      {
+        "id": "pair_003",
+        "name": "Виктор & Павел",
+        "players": [
+          {
+            "id": "p5",
+            "name": "Виктор Викторов",
+            "level": 4,
+            "avatar": "https://api.example.com/avatar/p5.jpg"
+          },
+          {
+            "id": "p6",
+            "name": "Павел Павлов",
+            "level": 4,
+            "avatar": "https://api.example.com/avatar/p6.jpg"
+          }
+        ],
+        "trueSkillIndex": 8,
+        "seed": 3,
+        "bye": false,
+        "winLossRecord": {
+          "wins": 1,
+          "losses": 0
+        }
+      },
+      {
+        "id": "pair_004",
+        "name": "Дмитрий & Игорь",
+        "players": [
+          {
+            "id": "p7",
+            "name": "Дмитрий Дмитриев",
+            "level": 3,
+            "avatar": "https://api.example.com/avatar/p7.jpg"
+          },
+          {
+            "id": "p8",
+            "name": "Игорь Иванов",
+            "level": 3,
+            "avatar": "https://api.example.com/avatar/p8.jpg"
+          }
+        ],
+        "trueSkillIndex": 6,
+        "seed": 4,
+        "bye": false,
+        "winLossRecord": {
+          "wins": 0,
+          "losses": 1
+        }
+      },
+      {
+        "id": "pair_005",
+        "name": "Андрей & Константин",
+        "players": [
+          {
+            "id": "p9",
+            "name": "Андрей Андреев",
+            "level": 4,
+            "avatar": "https://api.example.com/avatar/p9.jpg"
+          },
+          {
+            "id": "p10",
+            "name": "Константин Константинов",
+            "level": 2,
+            "avatar": "https://api.example.com/avatar/p10.jpg"
+          }
+        ],
+        "trueSkillIndex": 6,
+        "seed": 5,
+        "bye": false,
+        "winLossRecord": {
+          "wins": 0,
+          "losses": 0
+        }
+      },
+      {
+        "id": "pair_006",
+        "name": "Борис & Федор",
+        "players": [
+          {
+            "id": "p11",
+            "name": "Борис Борисов",
+            "level": 3,
+            "avatar": "https://api.example.com/avatar/p11.jpg"
+          },
+          {
+            "id": "p12",
+            "name": "Федор Федоров",
+            "level": 3,
+            "avatar": "https://api.example.com/avatar/p12.jpg"
+          }
+        ],
+        "trueSkillIndex": 6,
+        "seed": 6,
+        "bye": false,
+        "winLossRecord": {
+          "wins": 0,
+          "losses": 0
+        }
+      }
+    ],
+
+    "seeding": {
+      "method": "standard",
+      "seedOrder": [
+        "pair_001",
+        "pair_006",
+        "pair_002",
+        "pair_005",
+        "pair_003",
+        "pair_004"
+      ],
+      "byesCount": 2,
+      "bracketSize": 8
+    },
+
+    "bracket": {
+      "winners": [
+        {
+          "id": "m_wb_r1_p1",
+          "bracket": "WB",
+          "round": 1,
+          "position": 1,
+          "team_a_id": "pair_001",
+          "team_b_id": null,
+          "score_a": 0,
+          "score_b": 0,
+          "status": "pending",
+          "winner_id": null,
+          "isBye": true,
+          "upsetAlert": false,
+          "nextMatchWinnerId": "m_wb_r2_p1:a",
+          "nextMatchLoserId": null,
+          "createdAt": "2026-03-09T12:00:00Z",
+          "updatedAt": "2026-03-09T12:00:00Z"
+        },
+        {
+          "id": "m_wb_r1_p2",
+          "bracket": "WB",
+          "round": 1,
+          "position": 2,
+          "team_a_id": "pair_003",
+          "team_b_id": "pair_004",
+          "score_a": 25,
+          "score_b": 23,
+          "status": "completed",
+          "winner_id": "pair_003",
+          "isBye": false,
+          "upsetAlert": false,
+          "nextMatchWinnerId": "m_wb_r2_p1:b",
+          "nextMatchLoserId": "m_lb_r1_p1:a",
+          "createdAt": "2026-03-09T12:00:00Z",
+          "updatedAt": "2026-03-09T13:45:00Z"
+        },
+        {
+          "id": "m_wb_r1_p3",
+          "bracket": "WB",
+          "round": 1,
+          "position": 3,
+          "team_a_id": "pair_002",
+          "team_b_id": null,
+          "score_a": 0,
+          "score_b": 0,
+          "status": "pending",
+          "winner_id": null,
+          "isBye": true,
+          "upsetAlert": false,
+          "nextMatchWinnerId": "m_wb_r2_p2:a",
+          "nextMatchLoserId": null,
+          "createdAt": "2026-03-09T12:00:00Z",
+          "updatedAt": "2026-03-09T12:00:00Z"
+        },
+        {
+          "id": "m_wb_r1_p4",
+          "bracket": "WB",
+          "round": 1,
+          "position": 4,
+          "team_a_id": "pair_005",
+          "team_b_id": "pair_006",
+          "score_a": 0,
+          "score_b": 0,
+          "status": "pending",
+          "winner_id": null,
+          "isBye": false,
+          "upsetAlert": false,
+          "nextMatchWinnerId": "m_wb_r2_p2:b",
+          "nextMatchLoserId": "m_lb_r1_p2:a",
+          "createdAt": "2026-03-09T12:00:00Z",
+          "updatedAt": "2026-03-09T12:00:00Z"
+        },
+        {
+          "id": "m_wb_r2_p1",
+          "bracket": "WB",
+          "round": 2,
+          "position": 1,
+          "team_a_id": "pair_001",
+          "team_b_id": "pair_003",
+          "score_a": 0,
+          "score_b": 0,
+          "status": "pending",
+          "winner_id": null,
+          "isBye": false,
+          "upsetAlert": false,
+          "nextMatchWinnerId": "m_gf:a",
+          "nextMatchLoserId": "m_lb_r2_p1:a",
+          "createdAt": "2026-03-09T12:00:00Z",
+          "updatedAt": "2026-03-09T12:00:00Z"
+        },
+        {
+          "id": "m_wb_r2_p2",
+          "bracket": "WB",
+          "round": 2,
+          "position": 2,
+          "team_a_id": "pair_002",
+          "team_b_id": null,
+          "score_a": 0,
+          "score_b": 0,
+          "status": "pending",
+          "winner_id": null,
+          "isBye": false,
+          "upsetAlert": false,
+          "nextMatchWinnerId": "m_gf:a",
+          "nextMatchLoserId": "m_lb_r2_p2:a",
+          "createdAt": "2026-03-09T12:00:00Z",
+          "updatedAt": "2026-03-09T12:00:00Z"
+        }
+      ],
+
+      "losers": [
+        {
+          "id": "m_lb_r1_p1",
+          "bracket": "LB",
+          "round": 1,
+          "position": 1,
+          "team_a_id": "pair_004",
+          "team_b_id": null,
+          "score_a": 0,
+          "score_b": 0,
+          "status": "pending",
+          "winner_id": null,
+          "isBye": false,
+          "upsetAlert": false,
+          "nextMatchWinnerId": "m_lb_r2_p1:a",
+          "nextMatchLoserId": null,
+          "createdAt": "2026-03-09T12:00:00Z",
+          "updatedAt": "2026-03-09T12:00:00Z"
+        },
+        {
+          "id": "m_lb_r1_p2",
+          "bracket": "LB",
+          "round": 1,
+          "position": 2,
+          "team_a_id": null,
+          "team_b_id": null,
+          "score_a": 0,
+          "score_b": 0,
+          "status": "pending",
+          "winner_id": null,
+          "isBye": false,
+          "upsetAlert": false,
+          "nextMatchWinnerId": "m_lb_r2_p2:a",
+          "nextMatchLoserId": null,
+          "createdAt": "2026-03-09T12:00:00Z",
+          "updatedAt": "2026-03-09T12:00:00Z"
+        },
+        {
+          "id": "m_lb_r2_p1",
+          "bracket": "LB",
+          "round": 2,
+          "position": 1,
+          "team_a_id": null,
+          "team_b_id": null,
+          "score_a": 0,
+          "score_b": 0,
+          "status": "pending",
+          "winner_id": null,
+          "isBye": false,
+          "upsetAlert": false,
+          "nextMatchWinnerId": "m_gf:b",
+          "nextMatchLoserId": null,
+          "createdAt": "2026-03-09T12:00:00Z",
+          "updatedAt": "2026-03-09T12:00:00Z"
+        },
+        {
+          "id": "m_lb_r2_p2",
+          "bracket": "LB",
+          "round": 2,
+          "position": 2,
+          "team_a_id": null,
+          "team_b_id": null,
+          "score_a": 0,
+          "score_b": 0,
+          "status": "pending",
+          "winner_id": null,
+          "isBye": false,
+          "upsetAlert": false,
+          "nextMatchWinnerId": "m_lb_r3_p1:a",
+          "nextMatchLoserId": null,
+          "createdAt": "2026-03-09T12:00:00Z",
+          "updatedAt": "2026-03-09T12:00:00Z"
+        },
+        {
+          "id": "m_lb_r3_p1",
+          "bracket": "LB",
+          "round": 3,
+          "position": 1,
+          "team_a_id": null,
+          "team_b_id": null,
+          "score_a": 0,
+          "score_b": 0,
+          "status": "pending",
+          "winner_id": null,
+          "isBye": false,
+          "upsetAlert": false,
+          "nextMatchWinnerId": "m_gf:b",
+          "nextMatchLoserId": null,
+          "createdAt": "2026-03-09T12:00:00Z",
+          "updatedAt": "2026-03-09T12:00:00Z"
+        }
+      ],
+
+      "grand_final": {
+        "id": "m_gf",
+        "bracket": "GRAND_FINAL",
+        "round": -1,
+        "position": 1,
+        "team_a_id": null,
+        "team_b_id": null,
+        "score_a": 0,
+        "score_b": 0,
+        "status": "pending",
+        "winner_id": null,
+        "isBye": false,
+        "upsetAlert": false,
+        "nextMatchWinnerId": null,
+        "nextMatchLoserId": "m_sf",
+        "createdAt": "2026-03-09T12:00:00Z",
+        "updatedAt": "2026-03-09T12:00:00Z"
+      },
+
+      "super_final": null
+    },
+
+    "statistics": {
+      "totalMatches": 11,
+      "completedMatches": 1,
+      "pendingMatches": 10,
+      "upsetMatches": 0,
+      "byeMatches": 3,
+      "progress": {
+        "percentage": 9,
+        "message": "1/11 matches completed"
+      }
+    }
+  },
+
+  "advanced_features": {
+    "description": "Features available in DoubleElimTournament class",
+
+    "trueSkilSeeding": {
+      "algorithm": "Standard tournament seeding (1 vs N, 2 vs N-1)",
+      "advantage": "Top seeds can only meet in later rounds",
+      "example": "With 6 teams: Seeding order = [1, 6, 2, 5, 3, 4]"
+    },
+
+    "byeAllocation": {
+      "description": "Automatic first-round byes for top seeds",
+      "rule": "If teams < power of 2, top seeds get bye",
+      "example": "6 teams → bracket size 8 → top 2 teams (seeds 1,2) get bye"
+    },
+
+    "upsetDetection": {
+      "description": "Automatically flag when lower seed beats higher seed",
+      "uiIndicator": "🔥 Red border and pulsing animation",
+      "use": "Highlight exciting matches, generate statistics"
+    },
+
+    "realTimeSync": {
+      "description": "All clients update simultaneously via Supabase realtime",
+      "latency": "< 100ms typically",
+      "useCase": "Organizer and viewers see same bracket in real-time"
+    },
+
+    "doublejEliminationLogic": {
+      "winners_bracket": "Standard single-elimination (like tennis)",
+      "losers_bracket": "Teams dropped from WB play here",
+      "final_rule": "WB winner vs LB winner",
+      "super_final": "If LB winner wins final, one more match (they have 0 losses, WB winner has 1)"
+    }
+  }
+}
