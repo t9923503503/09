@@ -10,6 +10,7 @@ window.appState = {
   currentRoster: [],
   currentTab: 'roster', // 'roster', 'pairs', 'bracket'
   authenticated: false,  // Password authentication for bracket tab
+  pools: [],            // Group stage pools
   appSettings: {
     language: 'ru',
     zoomLevel: 1,
@@ -1110,6 +1111,8 @@ class TournamentApp {
    */
   clearPairs() {
     this.pairManager.clear();
+    this.poolManager.clear();
+    window.appState.pools = [];
     document.getElementById('playersInput').value = '';
     document.getElementById('pairsStatus').style.display = 'none';
     document.getElementById('pairsContainer').style.display = 'none';
@@ -1166,9 +1169,11 @@ class TournamentApp {
 
     document.getElementById('rosterInput').value = '';
     this.roster.clear();
+    this.poolManager.clear();
     this.tournament = null;
     window.appState.currentTournament = null;
     window.appState.currentRoster = [];
+    window.appState.pools = [];
 
     this.persistence.clear('tournament');
     this.updateRosterStatus(0);
