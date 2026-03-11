@@ -179,5 +179,24 @@
   "data.import": "📂 Загрузить резервную копию",
   "data.exportSuccess": "Данные турнира успешно сохранены",
   "data.importSuccess": "Данные турнира успешно загружены",
-  "data.importError": "Ошибка загрузки данных турнира"
+  "data.importError": "Ошибка загрузки данных турнира",
+
+  "tabs.leaderboard": "Рейтинг сезона",
+
+  "leaderboard.title": "📊 Рейтинг сезона",
+  "leaderboard.subtitle": "Рейтинги игроков и история турниров",
+  "leaderboard.rank": "Место",
+  "leaderboard.playerName": "Имя игрока",
+  "leaderboard.points": "Очки",
+  "leaderboard.wins": "Побед",
+  "leaderboard.losses": "Поражений",
+  "leaderboard.winRate": "% побед",
+  "leaderboard.tournaments": "Турниров",
+  "leaderboard.sortBy": "Сортировать по",
+  "leaderboard.empty": "В рейтинге ещё нет игроков. Завершите турнир, чтобы увидеть рейтинги!",
+
+  "tournament.completed": "Турнир завершён!",
+  "tournament.completedMessage": "Турнир завершился. Архивировать результаты и обновить рейтинг?",
+  "tournament.archiveAndFinish": "Архивировать и завершить",
+  "tournament.continue": "Продолжить"
 }

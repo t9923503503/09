@@ -512,4 +512,143 @@
   .champion-name {
     font-size: var(--font-size-md);
   }
+
+  /* Leaderboard styles */
+  .leaderboard-section {
+    background: white;
+    border-radius: 8px;
+    padding: var(--spacing-lg);
+  }
+
+  .leaderboard-header {
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: var(--spacing-md);
+  }
+
+  .leaderboard-header h2 {
+    font-size: 24px;
+    margin: 0 0 8px 0;
+    color: var(--color-primary);
+  }
+
+  .leaderboard-header p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+  }
+
+  .leaderboard-controls {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+  }
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .control-group label {
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  .control-select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    min-width: 150px;
+  }
+
+  .control-select:hover {
+    border-color: var(--color-primary);
+  }
+
+  .control-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(0, 150, 136, 0.1);
+  }
+
+  .leaderboard-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+  }
+
+  .leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .leaderboard-table thead {
+    background: linear-gradient(135deg, var(--color-primary), #00897b);
+    color: white;
+  }
+
+  .leaderboard-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .leaderboard-table tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+  }
+
+  .leaderboard-table tbody tr:hover {
+    background-color: #f5f5f5;
+  }
+
+  .leaderboard-table tbody tr:nth-child(odd) {
+    background-color: #fafafa;
+  }
+
+  .leaderboard-table td {
+    padding: 12px;
+    vertical-align: middle;
+  }
+
+  .rank-cell {
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    width: 60px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+  }
+
+  @media (max-width: 768px) {
+    .leaderboard-controls {
+      flex-direction: column;
+    }
+
+    .control-select {
+      width: 100%;
+      min-width: unset;
+    }
+
+    .leaderboard-table {
+      font-size: 12px;
+    }
+
+    .leaderboard-table th,
+    .leaderboard-table td {
+      padding: 8px;
+    }
+  }
 }

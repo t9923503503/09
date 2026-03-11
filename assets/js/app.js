@@ -30,6 +30,7 @@ class TournamentApp {
     this.persistence = null;
     this.i18n = null;
     this.tournament = null;
+    this.tournamentCompleteModalShown = false;
     this.currentTab = 'roster';      // Active tab: 'roster', 'pairs', 'bracket'
     this.authenticated = false;       // Password authentication
     this.bracketPassword = '2525';    // Protected bracket password
@@ -71,6 +72,13 @@ class TournamentApp {
 
       // 4.9. Setup print manager for tournament protocols
       this.printManager = new PrintManager(this.eventBus, this.i18n);
+
+      // 5.0. Setup season manager for archiving and leaderboard
+      this.seasonManager = new SeasonManager(this.eventBus, this.i18n, this.persistence);
+
+      // Restore archive and player stats
+      this.seasonManager.archive = this.persistence.restoreArchive();
+      this.seasonManager.playerStats = this.persistence.restorePlayerStats();
 
       // 5. Restore saved state
       this.restoreState();
@@ -431,6 +439,9 @@ class TournamentApp {
           <button class="tab-btn" data-tab="bracket">
             🏆 ${this.i18n.t('tabs.bracket')}
           </button>
+          <button class="tab-btn" data-tab="leaderboard">
+            📊 ${this.i18n.t('tabs.leaderboard')}
+          </button>
         </div>
       </div>
     `;
@@ -459,6 +470,7 @@ class TournamentApp {
         <div id="rosterTab" class="tab-content" data-tab="roster" style="display:none;"></div>
         <div id="pairsTab" class="tab-content" data-tab="pairs" style="display:none;"></div>
         <div id="bracketTab" class="tab-content" data-tab="bracket" style="display:none;"></div>
+        <div id="leaderboardTab" class="tab-content" data-tab="leaderboard" style="display:none;"></div>
       </div>
     `;
 
@@ -470,6 +482,7 @@ class TournamentApp {
     this.populateRosterTab();
     this.populatePairsTab();
     this.populateBracketTab();
+    this.populateLeaderboardTab();
   }
 
   /**
@@ -2014,7 +2027,108 @@ class TournamentApp {
     if (result) {
       this.eventBus.emit('match:updated', { match, result });
       this.persistence.debouncedSave('tournament');
+
+      // Check if tournament is now complete
+      setTimeout(() => this.checkIfTournamentComplete(), 500);
     }
+  }
+
+  /**
+   * Check if tournament is complete (grand final finished)
+   * If so, show archive modal
+   */
+  checkIfTournamentComplete() {
+    if (!this.tournament) return;
+
+    const grandFinal = this.tournament.bracket.grand_final;
+    if (!grandFinal || !grandFinal.winner_id) return;
+
+    // Check if all matches are completed
+    const allMatches = Object.values(this.tournament.matches);
+    const completedMatches = allMatches.filter(m => m.status === 'completed').length;
+    const totalMatches = allMatches.length;
+
+    // If grand final is complete
+    if (grandFinal.status === 'completed' && completedMatches === totalMatches) {
+      // Prevent showing modal multiple times
+      if (!this.tournamentCompleteModalShown) {
+        this.tournamentCompleteModalShown = true;
+        this.showTournamentCompleteModal();
+      }
+    }
+  }
+
+  /**
+   * Show modal to archive tournament results
+   */
+  showTournamentCompleteModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'tournamentCompleteModal';
+    modal.innerHTML = `
+      <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+          <h2 style="margin: 0; color: var(--color-primary);">
+            ${this.i18n.t('tournament.completed')}
+          </h2>
+          <button class="modal-close" id="closeCompleteModal">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 20px; text-align: center;">
+          <p style="font-size: 16px; color: #333; margin-top: 10px;">
+            ${this.i18n.t('tournament.completedMessage')}
+          </p>
+        </div>
+        <div class="modal-actions" style="display: flex; gap: 10px; padding: 20px; justify-content: center;">
+          <button id="archiveBtn" class="btn btn-success" style="padding: 10px 30px;">
+            ✓ ${this.i18n.t('tournament.archiveAndFinish')}
+          </button>
+          <button id="continueBtn" class="btn btn-secondary" style="padding: 10px 30px;">
+            ${this.i18n.t('tournament.continue')}
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Handle close button
+    document.getElementById('closeCompleteModal').addEventListener('click', () => {
+      document.body.removeChild(modal);
+      this.tournamentCompleteModalShown = false;
+    });
+
+    // Handle continue button
+    document.getElementById('continueBtn').addEventListener('click', () => {
+      document.body.removeChild(modal);
+      this.tournamentCompleteModalShown = false;
+    });
+
+    // Handle archive button
+    document.getElementById('archiveBtn').addEventListener('click', () => {
+      // Archive tournament
+      const archiveEntry = this.seasonManager.completeTournament(this.tournament);
+
+      if (archiveEntry) {
+        // Clear tournament state
+        this.tournament = null;
+        this.tournamentCompleteModalShown = false;
+        this.persistence.clear('tournament');
+
+        // Close modal
+        document.body.removeChild(modal);
+
+        // Show success message
+        this.showMessage(this.i18n.t('data.exportSuccess'));
+
+        // Switch to leaderboard tab
+        this.switchTab('leaderboard');
+
+        // Re-render
+        this.render();
+      } else {
+        this.showError('Failed to archive tournament');
+      }
+    });
   }
 
   /**
@@ -2284,6 +2398,117 @@ class TournamentApp {
     container.className = 'toast-container';
     document.body.appendChild(container);
     return container;
+  }
+
+  /**
+   * Populate leaderboard tab with season ratings
+   */
+  populateLeaderboardTab() {
+    const tab = document.getElementById('leaderboardTab');
+    if (!tab) return;
+
+    const html = `
+      <div class="container" style="margin-top: 20px;">
+        <div class="leaderboard-section">
+
+          <!-- Header -->
+          <div class="leaderboard-header">
+            <h2>${this.i18n.t('leaderboard.title')}</h2>
+            <p>${this.i18n.t('leaderboard.subtitle')}</p>
+          </div>
+
+          <!-- Controls -->
+          <div class="leaderboard-controls">
+            <div class="control-group">
+              <label>${this.i18n.t('leaderboard.sortBy')}:</label>
+              <select id="leaderboardSort" class="control-select">
+                <option value="points">${this.i18n.t('leaderboard.points')}</option>
+                <option value="wins">${this.i18n.t('leaderboard.wins')}</option>
+                <option value="winRate">${this.i18n.t('leaderboard.winRate')}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Leaderboard Table -->
+          <div class="leaderboard-table-wrapper">
+            <table class="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>${this.i18n.t('leaderboard.rank')}</th>
+                  <th>${this.i18n.t('leaderboard.playerName')}</th>
+                  <th>${this.i18n.t('leaderboard.points')}</th>
+                  <th>${this.i18n.t('leaderboard.wins')}</th>
+                  <th>${this.i18n.t('leaderboard.losses')}</th>
+                  <th>${this.i18n.t('leaderboard.winRate')}</th>
+                  <th>${this.i18n.t('leaderboard.tournaments')}</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardTableBody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty state -->
+          <div id="leaderboardEmpty" class="empty-state" style="display:none; text-align:center; padding: 60px 20px;">
+            <p style="font-size:18px; color:#999;">${this.i18n.t('leaderboard.empty')}</p>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    tab.innerHTML = html;
+    this.setupLeaderboardListeners();
+    this.renderLeaderboard();
+  }
+
+  /**
+   * Setup leaderboard event listeners
+   */
+  setupLeaderboardListeners() {
+    const sortSelect = document.getElementById('leaderboardSort');
+    if (sortSelect) {
+      sortSelect.addEventListener('change', () => this.renderLeaderboard());
+    }
+  }
+
+  /**
+   * Render leaderboard table with current sorting
+   */
+  renderLeaderboard() {
+    const sortBy = document.getElementById('leaderboardSort')?.value || 'points';
+    const leaderboard = this.seasonManager.getLeaderboard({
+      sortBy: sortBy,
+      limit: 200
+    });
+
+    const tbody = document.getElementById('leaderboardTableBody');
+    const empty = document.getElementById('leaderboardEmpty');
+
+    if (!leaderboard || leaderboard.length === 0) {
+      if (tbody) tbody.innerHTML = '';
+      if (empty) empty.style.display = 'block';
+      return;
+    }
+
+    if (empty) empty.style.display = 'none';
+
+    if (tbody) {
+      tbody.innerHTML = leaderboard.map(player => `
+        <tr>
+          <td class="rank-cell">
+            ${player.rank <= 3 ? '🥇🥈🥉'[player.rank - 1] : player.rank}
+          </td>
+          <td>${this.escapeHtml(player.name)}</td>
+          <td><strong>${player.totalPoints}</strong></td>
+          <td>${player.wins}</td>
+          <td>${player.losses}</td>
+          <td>${(player.winRate * 100).toFixed(1)}%</td>
+          <td>${player.participations}</td>
+        </tr>
+      `).join('');
+    }
   }
 }
 

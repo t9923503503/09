@@ -179,5 +179,24 @@
   "data.import": "📂 Import Backup",
   "data.exportSuccess": "Tournament data exported successfully",
   "data.importSuccess": "Tournament data imported successfully",
-  "data.importError": "Failed to import tournament data"
+  "data.importError": "Failed to import tournament data",
+
+  "tabs.leaderboard": "Leaderboard",
+
+  "leaderboard.title": "📊 Season Leaderboard",
+  "leaderboard.subtitle": "Player rankings and tournament history",
+  "leaderboard.rank": "Rank",
+  "leaderboard.playerName": "Player Name",
+  "leaderboard.points": "Points",
+  "leaderboard.wins": "Wins",
+  "leaderboard.losses": "Losses",
+  "leaderboard.winRate": "Win Rate",
+  "leaderboard.tournaments": "Tournaments",
+  "leaderboard.sortBy": "Sort by",
+  "leaderboard.empty": "No players in leaderboard yet. Complete a tournament to see rankings!",
+
+  "tournament.completed": "Tournament Complete!",
+  "tournament.completedMessage": "The tournament has finished. Archive results and update the leaderboard?",
+  "tournament.archiveAndFinish": "Archive & Finish",
+  "tournament.continue": "Continue"
 }

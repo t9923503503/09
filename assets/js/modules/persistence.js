@@ -16,7 +16,9 @@ class PersistenceManager {
       tournament: 'tournament:state',
       roster: 'roster:teams',
       settings: 'app:settings',
-      version: 'app:version'
+      version: 'app:version',
+      archive: 'app:archive',
+      playerStats: 'app:playerStats'
     };
 
     // Listen to save events
@@ -265,20 +267,71 @@ class PersistenceManager {
       return false;
     }
   }
-}
 
-// Create global instance
-let persistence = null;
+  /**
+   * Save tournament archive to localStorage
+   * @param {Array} archive - Array of completed tournaments
+   */
+  saveArchive(archive) {
+    try {
+      localStorage.setItem(this.keys.archive, JSON.stringify(archive));
+      this.eventBus.emit('archive:saved');
+    } catch (error) {
+      if (error.name === 'QuotaExceededError') {
+        console.error('Archive save failed: storage quota exceeded');
+        this.eventBus.emit('storage:quotaExceeded');
+      }
+    }
+  }
 
-function initPersistence(eventBus) {
-  persistence = new PersistenceManager(eventBus);
-  return persistence;
-}
+  /**
+   * Restore tournament archive from localStorage
+   * @returns {Array} Archive array
+   */
+  restoreArchive() {
+    try {
+      const stored = localStorage.getItem(this.keys.archive);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error('Failed to restore archive:', error);
+      return [];
+    }
+  }
 
-// Export
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { PersistenceManager, initPersistence };
-}
+  /**
+   * Save player statistics to localStorage
+   * @param {Map} playerStatsMap - Map of player name → stats
+   */
+  savePlayerStats(playerStatsMap) {
+    try {
+      const data = Object.fromEntries(playerStatsMap);
+      localStorage.setItem(this.keys.playerStats, JSON.stringify(data));
+      this.eventBus.emit('playerStats:saved');
+    } catch (error) {
+      if (error.name === 'QuotaExceededError') {
+        console.error('Player stats save failed: storage quota exceeded');
+        this.eventBus.emit('storage:quotaExceeded');
+      }
+    }
+  }
+
+  /**
+   * Restore player statistics from localStorage
+   * @returns {Map} Player stats map
+   */
+  restorePlayerStats() {
+    try {
+      const stored = localStorage.getItem(this.keys.playerStats);
+      if (stored) {
+        const data = JSON.parse(stored);
+        return new Map(Object.entries(data));
+      }
+      return new Map();
+    } catch (error) {
+      console.error('Failed to restore player stats:', error);
+      return new Map();
+    }
+  }
 
   /**
    * Export tournament data as JSON file
@@ -318,3 +371,17 @@ if (typeof module !== 'undefined' && module.exports) {
       reader.readAsText(file);
     });
   }
+}
+
+// Create global instance
+let persistence = null;
+
+function initPersistence(eventBus) {
+  persistence = new PersistenceManager(eventBus);
+  return persistence;
+}
+
+// Export
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { PersistenceManager, initPersistence };
+}
