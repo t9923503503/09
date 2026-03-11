@@ -192,6 +192,9 @@ class TournamentApp {
             </div>
           </div>
           <div class="header-right">
+            <button class="header-btn" id="settingsBtn" title="Tournament Settings">
+              ⚙️
+            </button>
             <div class="language-switcher">
               <button class="language-toggle" id="languageToggle">
                 <span class="language-icon">🌍</span>
@@ -240,7 +243,130 @@ class TournamentApp {
       });
     });
 
+    // Setup settings button
+    const settingsBtn = document.getElementById('settingsBtn');
+    settingsBtn.addEventListener('click', () => this.openTournamentSettings());
+
     this.updateLanguageDisplay();
+  }
+
+  /**
+   * Open tournament settings modal
+   */
+  openTournamentSettings() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'settingsModal';
+    modal.innerHTML = `
+      <div class="modal-content settings-modal">
+        <div class="modal-header">
+          <h2>⚙️ ${this.i18n.t('settings.title')}</h2>
+          <button class="modal-close" id="closeSettingsBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="settings-group">
+            <label class="settings-label">${this.i18n.t('settings.tournament.name')}</label>
+            <input type="text" id="tournamentName" class="settings-input" placeholder="Beach Volleyball Tournament">
+          </div>
+
+          <div class="settings-group">
+            <label class="settings-label">${this.i18n.t('settings.tournament.format')}</label>
+            <div class="settings-radio-group">
+              <label class="settings-radio">
+                <input type="radio" name="format" value="knockout" checked>
+                <span>${this.i18n.t('settings.tournament.knockout')}</span>
+              </label>
+              <label class="settings-radio">
+                <input type="radio" name="format" value="groups">
+                <span>${this.i18n.t('settings.tournament.groups')}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <label class="settings-label">${this.i18n.t('settings.courts.count')}</label>
+            <div class="settings-radio-group">
+              ${[1, 2, 3, 4].map(n => `
+                <label class="settings-radio">
+                  <input type="radio" name="courts" value="${n}" ${n === 1 ? 'checked' : ''}>
+                  <span>${n}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <label class="settings-label">${this.i18n.t('settings.sets.format')}</label>
+            <div class="settings-radio-group">
+              <label class="settings-radio">
+                <input type="radio" name="setFormat" value="regular" checked>
+                <span>${this.i18n.t('settings.sets.regular')}</span>
+              </label>
+              <label class="settings-radio">
+                <input type="radio" name="setFormat" value="pro">
+                <span>${this.i18n.t('settings.sets.pro')}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancelSettingsBtn">${this.i18n.t('modals.no')}</button>
+          <button class="btn btn-primary" id="saveSettingsBtn">${this.i18n.t('modals.yes')}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Load current settings
+    const tournamentNameInput = document.getElementById('tournamentName');
+    const formatRadios = document.querySelectorAll('input[name="format"]');
+    const courtsRadios = document.querySelectorAll('input[name="courts"]');
+    const setFormatRadios = document.querySelectorAll('input[name="setFormat"]');
+
+    if (window.appState.tournament) {
+      tournamentNameInput.value = window.appState.tournament.name || '';
+      const format = window.appState.tournament.format || 'knockout';
+      formatRadios.forEach(r => r.checked = r.value === format);
+
+      const courts = window.appState.tournament.courts || 1;
+      courtsRadios.forEach(r => r.checked = r.value == courts);
+
+      const setFormat = window.appState.tournament.setFormat || 'regular';
+      setFormatRadios.forEach(r => r.checked = r.value === setFormat);
+    }
+
+    // Setup close handlers
+    const closeBtn = document.getElementById('closeSettingsBtn');
+    const cancelBtn = document.getElementById('cancelSettingsBtn');
+    const saveBtn = document.getElementById('saveSettingsBtn');
+
+    const closeModal = () => modal.remove();
+
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    saveBtn.addEventListener('click', () => {
+      const settings = {
+        name: tournamentNameInput.value || 'Beach Volleyball Tournament',
+        format: document.querySelector('input[name="format"]:checked').value,
+        courts: parseInt(document.querySelector('input[name="courts"]:checked').value),
+        setFormat: document.querySelector('input[name="setFormat"]:checked').value
+      };
+
+      window.appState.tournament = window.appState.tournament || {};
+      Object.assign(window.appState.tournament, settings);
+
+      this.persistence.save('tournament');
+      this.showMessage(this.i18n.t('messages.settingsSaved'));
+      closeModal();
+    });
+
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
   }
 
   /**

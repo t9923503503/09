@@ -100,5 +100,16 @@
   "messages.matchRecorded": "Результат матча записан",
   "messages.stateSaved": "Состояние сохранено",
   "messages.stateRestored": "Состояние восстановлено",
-  "messages.languageChanged": "Язык изменён на Русский"
+  "messages.settingsSaved": "Настройки турнира сохранены",
+  "messages.languageChanged": "Язык изменён на Русский",
+
+  "settings.title": "Настройки турнира",
+  "settings.tournament.name": "Название турнира",
+  "settings.tournament.format": "Формат турнира",
+  "settings.tournament.knockout": "Только выбывание",
+  "settings.tournament.groups": "Группы + Плей-офф",
+  "settings.courts.count": "Количество площадок",
+  "settings.sets.format": "Формат сета",
+  "settings.sets.regular": "Стандартный (15-15-15)",
+  "settings.sets.pro": "Профессиональный (21-21-15)"
 }

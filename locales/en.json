@@ -100,5 +100,16 @@
   "messages.matchRecorded": "Match result recorded",
   "messages.stateSaved": "State saved",
   "messages.stateRestored": "Tournament state restored",
-  "messages.languageChanged": "Language changed to English"
+  "messages.settingsSaved": "Tournament settings saved",
+  "messages.languageChanged": "Language changed to English",
+
+  "settings.title": "Tournament Settings",
+  "settings.tournament.name": "Tournament Name",
+  "settings.tournament.format": "Tournament Format",
+  "settings.tournament.knockout": "Knockout Only",
+  "settings.tournament.groups": "Groups + Playoffs",
+  "settings.courts.count": "Number of Courts",
+  "settings.sets.format": "Set Format",
+  "settings.sets.regular": "Regular (15-15-15)",
+  "settings.sets.pro": "Pro (21-21-15)"
 }
