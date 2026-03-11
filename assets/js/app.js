@@ -977,6 +977,15 @@ class TournamentApp {
     if (advanceBtn) {
       advanceBtn.addEventListener('click', () => this.advancePairsFromPools());
     }
+
+    // Setup match scoring buttons
+    bracketSection.querySelectorAll('.pool-matches-list button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const poolId = e.target.dataset.poolId;
+        const matchId = e.target.dataset.matchId;
+        this.openMatchScoringModal(poolId, matchId);
+      });
+    });
   }
 
   /**
@@ -1023,6 +1032,26 @@ class TournamentApp {
             `).join('')}
           </tbody>
         </table>
+
+        <div class="pool-matches-section">
+          <h4 class="pool-matches-title">${this.i18n.t('sets.matches')}</h4>
+          <div class="pool-matches-list">
+            ${pool.matches.map(match => `
+              <div class="pool-match-item ${match.completed ? 'completed' : ''}">
+                <div class="match-teams-row">
+                  <span class="match-pair">${match.pairA.name}</span>
+                  <span class="match-score">
+                    ${match.completed ? `${match.setsA.join('/')} - ${match.setsB.join('/')}` : '—'}
+                  </span>
+                  <span class="match-pair">${match.pairB.name}</span>
+                </div>
+                <button class="btn btn-sm btn-primary" data-pool-id="${pool.id}" data-match-id="${match.id}">
+                  ${match.completed ? '✓ ' : ''}${this.i18n.t('sets.enterScore')}
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
       </div>
     `;
   }
@@ -1063,6 +1092,114 @@ class TournamentApp {
     }));
 
     this.render();
+  }
+
+  /**
+   * Open match scoring modal
+   * @param {string} poolId - Pool ID
+   * @param {string} matchId - Match ID
+   */
+  openMatchScoringModal(poolId, matchId) {
+    const pool = this.poolManager.getPool(poolId);
+    if (!pool) return;
+
+    const match = pool.matches.find(m => m.id === matchId);
+    if (!match) return;
+
+    const setFormat = window.appState.tournament?.setFormat || 'regular';
+    const maxSets = setFormat === 'pro' ? 3 : 3;  // Best of 3
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = `matchModal_${matchId}`;
+
+    let setsHTML = '';
+    for (let i = 0; i < maxSets; i++) {
+      setsHTML += `
+        <div class="set-input-group">
+          <label class="set-label">${this.i18n.t('sets.setLabel', { number: i + 1 })}</label>
+          <div class="set-inputs">
+            <input type="number" class="set-score" data-set="${i}" data-team="a" min="0" max="25" placeholder="0">
+            <span class="set-vs">vs</span>
+            <input type="number" class="set-score" data-set="${i}" data-team="b" min="0" max="25" placeholder="0">
+          </div>
+        </div>
+      `;
+    }
+
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>${this.i18n.t('sets.matchTitle')}</h3>
+          <button class="modal-close" data-match-id="${matchId}">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="match-teams">
+            <div class="team-name team-a">${match.pairA.name}</div>
+            <div class="team-vs">vs</div>
+            <div class="team-name team-b">${match.pairB.name}</div>
+          </div>
+          <div class="sets-form">
+            ${setsHTML}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-action="cancel" data-match-id="${matchId}">
+            ${this.i18n.t('modals.no')}
+          </button>
+          <button class="btn btn-success" data-action="save" data-match-id="${matchId}" data-pool-id="${poolId}">
+            ${this.i18n.t('sets.save')}
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Setup event listeners
+    const closeBtn = modal.querySelector('.modal-close');
+    closeBtn.addEventListener('click', () => modal.remove());
+
+    const cancelBtn = modal.querySelector('[data-action="cancel"]');
+    cancelBtn.addEventListener('click', () => modal.remove());
+
+    const saveBtn = modal.querySelector('[data-action="save"]');
+    saveBtn.addEventListener('click', () => {
+      const setsA = [];
+      const setsB = [];
+
+      for (let i = 0; i < maxSets; i++) {
+        const scoreA = parseInt(
+          modal.querySelector(`[data-set="${i}"][data-team="a"]`).value
+        ) || 0;
+        const scoreB = parseInt(
+          modal.querySelector(`[data-set="${i}"][data-team="b"]`).value
+        ) || 0;
+
+        if (scoreA > 0 || scoreB > 0) {
+          setsA.push(scoreA);
+          setsB.push(scoreB);
+        }
+      }
+
+      if (setsA.length === 0) {
+        this.showError(this.i18n.t('sets.error.noScores'));
+        return;
+      }
+
+      // Record match result
+      this.poolManager.recordMatchResult(matchId, setsA, setsB);
+
+      this.showMessage(this.i18n.t('messages.matchRecorded'));
+      modal.remove();
+      this.displayPools();
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
   }
 
   /**

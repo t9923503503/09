@@ -130,5 +130,14 @@
   "pools.advanceButton": "✓ Добавить топ-2 в плей-офф",
   "pools.advancing": "Добавление пар...",
   "pools.messages.distributed": "Пары распределены: {poolCount} групп по {size}",
-  "pools.messages.advanced": "Добавлено {count} пар в плей-офф"
+  "pools.messages.advanced": "Добавлено {count} пар в плей-офф",
+
+  "sets.title": "Запись результатов",
+  "sets.matchTitle": "Запись результата матча",
+  "sets.matches": "Матчи",
+  "sets.enterScore": "Записать результат",
+  "sets.setLabel": "Сет {number}",
+  "sets.save": "Сохранить результат",
+  "sets.error.noScores": "Введите хотя бы один результат сета",
+  "sets.error.invalidScore": "Некорректный результат"
 }

@@ -130,5 +130,14 @@
   "pools.advanceButton": "✓ Advance Top 2 to Playoffs",
   "pools.advancing": "Advancing pairs...",
   "pools.messages.distributed": "Pairs distributed: {poolCount} groups of {size}",
-  "pools.messages.advanced": "Advanced {count} pairs to playoff bracket"
+  "pools.messages.advanced": "Advanced {count} pairs to playoff bracket",
+
+  "sets.title": "Match Scoring",
+  "sets.matchTitle": "Record Match Result",
+  "sets.matches": "Matches",
+  "sets.enterScore": "Enter Score",
+  "sets.setLabel": "Set {number}",
+  "sets.save": "Save Result",
+  "sets.error.noScores": "Please enter at least one set score",
+  "sets.error.invalidScore": "Invalid score entered"
 }
