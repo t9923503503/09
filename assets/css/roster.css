@@ -1,0 +1,327 @@
+/**
+ * ═══════════════════════════════════════════════
+ * ROSTER MANAGEMENT STYLES
+ * ═══════════════════════════════════════════════
+ */
+
+.roster-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.roster-header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.roster-title {
+  font-size: var(--font-size-xl);
+  color: var(--gold);
+  margin-bottom: var(--spacing-sm);
+}
+
+.roster-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+}
+
+.roster-input-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.roster-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text);
+  font-size: var(--font-size-md);
+}
+
+.roster-textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: var(--spacing-md);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  background: var(--dark3);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-md);
+  line-height: 1.6;
+  resize: vertical;
+  transition: all var(--transition-fast);
+}
+
+.roster-textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+  background: var(--card);
+}
+
+.roster-textarea::placeholder {
+  color: var(--muted);
+}
+
+.roster-options {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.roster-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.roster-checkbox input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.roster-checkbox label {
+  cursor: pointer;
+  user-select: none;
+}
+
+.roster-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-lg);
+}
+
+.roster-actions .btn {
+  flex: 1;
+  min-width: 150px;
+}
+
+@media (max-width: 768px) {
+  .roster-actions .btn {
+    min-width: 120px;
+    flex: 0 1 auto;
+  }
+}
+
+.roster-status {
+  background: var(--dark3);
+  border-left: 4px solid var(--gold);
+  padding: var(--spacing-md);
+  border-radius: 4px;
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  color: var(--text);
+}
+
+.roster-status.error {
+  border-left-color: var(--red);
+  color: var(--red);
+}
+
+.roster-status.success {
+  border-left-color: var(--green);
+  color: var(--green);
+}
+
+.roster-preview {
+  background: var(--dark3);
+  border-radius: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.roster-preview-title {
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+}
+
+.roster-list {
+  list-style: none;
+}
+
+.roster-list-item {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--font-size-sm);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.roster-list-item:last-child {
+  border-bottom: none;
+}
+
+.roster-list-item-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--gold);
+  color: var(--dark);
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: var(--font-size-xs);
+  flex-shrink: 0;
+}
+
+.roster-list-item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Bracket info display */
+.bracket-info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border);
+}
+
+.bracket-info-item {
+  text-align: center;
+}
+
+.bracket-info-value {
+  font-size: var(--font-size-2xl);
+  font-weight: bold;
+  color: var(--gold);
+  line-height: 1.2;
+}
+
+.bracket-info-label {
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+  margin-top: var(--spacing-xs);
+}
+
+@media (max-width: 480px) {
+  .bracket-info {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  .roster-actions {
+    flex-direction: column;
+  }
+
+  .roster-actions .btn {
+    min-width: auto;
+    flex: 1;
+  }
+}
+
+/* Loading state */
+.roster-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.roster-loading .btn {
+  opacity: 0.6;
+}
+
+/* Error handling */
+.roster-error {
+  background: rgba(233, 69, 96, 0.1);
+  border-left-color: var(--red);
+  color: var(--red);
+}
+
+.roster-error-line {
+  color: var(--red);
+  background: rgba(233, 69, 96, 0.05);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+/* Success animation */
+.roster-success-animation {
+  animation: slideIn var(--transition-normal);
+}
+
+/* Tooltip for bracket info */
+.bracket-info-tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: help;
+}
+
+.bracket-info-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--dark4);
+  color: var(--text);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: var(--font-size-xs);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+  z-index: 10;
+  border: 1px solid var(--border);
+}
+
+.bracket-info-tooltip:hover::after {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* CSV Import/Export */
+.import-export-section {
+  background: var(--dark3);
+  border-radius: 6px;
+  padding: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+  border: 1px dashed var(--border);
+}
+
+.import-export-title {
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+}
+
+.import-export-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.import-export-actions .btn {
+  flex: 0 1 auto;
+}
+
+@media (max-width: 480px) {
+  .import-export-actions {
+    flex-direction: column;
+  }
+
+  .import-export-actions .btn {
+    width: 100%;
+  }
+
+  .bracket-info {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
