@@ -2,6 +2,16 @@
   "app.title": "Турнирная сетка",
   "app.subtitle": "Двойное выбывание с сидированием True Skill",
 
+  "tabs.roster": "Ростер",
+  "tabs.pairs": "Микст",
+  "tabs.bracket": "Сетка",
+
+  "bracket.protected": "Сетка защищена",
+  "bracket.enterPassword": "Введите пароль для доступа к турнирной сетке",
+  "bracket.unlock": "Разблокировать",
+  "bracket.logout": "Выход",
+  "bracket.wrongPassword": "Неверный пароль. Попробуйте ещё раз.",
+
   "header.language": "Язык",
   "header.languageEn": "English",
   "header.languageRu": "Русский",

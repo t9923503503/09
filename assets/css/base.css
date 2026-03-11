@@ -404,3 +404,149 @@ input:focus-visible {
   body { background: white; color: black; }
   .btn, button { display: none; }
 }
+
+/* ═══════════════════════════════════════════════ */
+/* TABS NAVIGATION */
+/* ═══════════════════════════════════════════════ */
+
+.tabs-container {
+  position: sticky;
+  top: 0;
+  background: var(--dark);
+  border-bottom: 2px solid var(--border);
+  z-index: 100;
+  padding: 0;
+}
+
+.tabs-nav {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+  display: flex;
+  gap: var(--spacing-lg);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  font-size: var(--font-size-md);
+}
+
+.tab-btn:hover {
+  color: var(--text);
+}
+
+.tab-btn.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+.tabs-content {
+  min-height: 400px;
+}
+
+.tab-content {
+  animation: fadeIn var(--transition-normal);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════ */
+/* PASSWORD PROTECTION MODAL */
+/* ═══════════════════════════════════════════════ */
+
+.password-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+}
+
+.password-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: var(--spacing-xl);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.password-header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.password-icon {
+  font-size: 3em;
+  display: block;
+  margin-bottom: var(--spacing-md);
+}
+
+.password-card h2 {
+  color: var(--gold);
+  margin-bottom: var(--spacing-md);
+}
+
+.password-text {
+  color: var(--muted);
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+}
+
+.password-input {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-lg);
+  text-align: center;
+  letter-spacing: 2px;
+  margin-bottom: var(--spacing-md);
+}
+
+.password-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+.password-error {
+  background: rgba(233, 69, 96, 0.1);
+  color: var(--red);
+  padding: var(--spacing-md);
+  border-radius: 6px;
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-lg);
+  border: 1px solid var(--red);
+}
+
+@media (max-width: 480px) {
+  .tabs-nav {
+    gap: var(--spacing-sm);
+  }
+
+  .tab-btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .password-card {
+    padding: var(--spacing-lg);
+  }
+}

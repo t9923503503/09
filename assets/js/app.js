@@ -8,6 +8,8 @@
 window.appState = {
   currentTournament: null,
   currentRoster: [],
+  currentTab: 'roster', // 'roster', 'pairs', 'bracket'
+  authenticated: false,  // Password authentication for bracket tab
   appSettings: {
     language: 'ru',
     zoomLevel: 1,
@@ -23,9 +25,13 @@ class TournamentApp {
   constructor() {
     this.eventBus = eventBus;
     this.roster = null;
+    this.pairManager = null;
     this.persistence = null;
     this.i18n = null;
     this.tournament = null;
+    this.currentTab = 'roster';      // Active tab: 'roster', 'pairs', 'bracket'
+    this.authenticated = false;       // Password authentication
+    this.bracketPassword = '2525';    // Protected bracket password
     this.zoomLevel = 1;
     this.panX = 0;
     this.panY = 0;
@@ -147,14 +153,11 @@ class TournamentApp {
     // Header
     this.setupHeader();
 
-    // Roster panel
-    this.setupRosterPanel();
+    // Tabs container and navigation
+    this.setupTabsNavigation();
 
-    // Pairs (Mixed Doubles) panel
-    this.setupPairsPanel();
-
-    // Bracket section
-    this.setupBracketSection();
+    // Tab contents
+    this.setupTabsContent();
 
     // Controls
     this.setupControls();
@@ -277,9 +280,67 @@ class TournamentApp {
   }
 
   /**
-   * Setup roster management panel
+   * Setup tabs navigation
    */
-  setupRosterPanel() {
+  setupTabsNavigation() {
+    const html = `
+      <div class="tabs-container">
+        <div class="tabs-nav">
+          <button class="tab-btn active" data-tab="roster">
+            📋 ${this.i18n.t('tabs.roster')}
+          </button>
+          <button class="tab-btn" data-tab="pairs">
+            👥 ${this.i18n.t('tabs.pairs')}
+          </button>
+          <button class="tab-btn" data-tab="bracket">
+            🏆 ${this.i18n.t('tabs.bracket')}
+          </button>
+        </div>
+      </div>
+    `;
+
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    document.body.appendChild(container.firstElementChild);
+
+    // Setup tab button listeners
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const tabName = e.target.dataset.tab;
+        this.switchTab(tabName);
+      });
+    });
+
+    this.updateTabsDisplay();
+  }
+
+  /**
+   * Setup tabs content areas
+   */
+  setupTabsContent() {
+    const html = `
+      <div id="tabsContent" class="tabs-content">
+        <div id="rosterTab" class="tab-content" data-tab="roster" style="display:none;"></div>
+        <div id="pairsTab" class="tab-content" data-tab="pairs" style="display:none;"></div>
+        <div id="bracketTab" class="tab-content" data-tab="bracket" style="display:none;"></div>
+      </div>
+    `;
+
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    document.body.appendChild(container.firstElementChild);
+
+    // Populate tabs
+    this.populateRosterTab();
+    this.populatePairsTab();
+    this.populateBracketTab();
+  }
+
+  /**
+   * Populate roster tab with content
+   */
+  populateRosterTab() {
+    const tab = document.getElementById('rosterTab');
     const html = `
       <div class="container" style="margin-top: 20px;">
         <div class="roster-section">
@@ -333,21 +394,18 @@ class TournamentApp {
       </div>
     `;
 
-    const container = document.createElement('div');
-    container.innerHTML = html;
-    document.body.appendChild(container.firstElementChild);
+    tab.innerHTML = html;
 
     // Setup event listeners
     const input = document.getElementById('rosterInput');
     const generateBtn = document.getElementById('generateBtn');
     const clearBtn = document.getElementById('clearRosterBtn');
-    const shuffleToggle = document.getElementById('shuffleToggle');
 
     input.addEventListener('input', (e) => this.onRosterInputChange(e));
-    generateBtn.addEventListener('click', () => this.generateTournament());
+    generateBtn.addEventListener('click', () => this.generateTournamentFromRoster());
     clearBtn.addEventListener('click', () => this.clearRoster());
 
-    // Restore previous input if exists
+    // Restore previous input
     if (this.roster.teams.length > 0) {
       const names = this.roster.teams.map(t => t.name).join('\n');
       input.value = names;
@@ -356,9 +414,10 @@ class TournamentApp {
   }
 
   /**
-   * Setup pairs (mixed doubles) management panel
+   * Populate pairs tab with content
    */
-  setupPairsPanel() {
+  populatePairsTab() {
+    const tab = document.getElementById('pairsTab');
     const html = `
       <div class="container" style="margin-top: 20px;">
         <div class="roster-section">
@@ -385,7 +444,7 @@ class TournamentApp {
               ${this.i18n.t('pairs.clear')}
             </button>
             <button class="btn btn-success" id="generateTournamentFromPairsBtn" style="display:none;">
-              🏆 Generate Tournament
+              🏆 ${this.i18n.t('tabs.bracket')}
             </button>
           </div>
 
@@ -399,9 +458,7 @@ class TournamentApp {
       </div>
     `;
 
-    const container = document.createElement('div');
-    container.innerHTML = html;
-    document.body.appendChild(container.firstElementChild);
+    tab.innerHTML = html;
 
     // Setup event listeners
     const playersInput = document.getElementById('playersInput');
@@ -414,6 +471,174 @@ class TournamentApp {
     clearBtn.addEventListener('click', () => this.clearPairs());
     tournamentBtn.addEventListener('click', () => this.generateTournamentFromPairs());
   }
+
+  /**
+   * Populate bracket tab with content
+   */
+  populateBracketTab() {
+    const tab = document.getElementById('bracketTab');
+
+    if (!this.authenticated) {
+      // Show password form
+      const html = `
+        <div class="container" style="margin-top: 20px;">
+          <div class="password-modal">
+            <div class="password-card">
+              <div class="password-header">
+                <div class="password-icon">🔐</div>
+                <h2>${this.i18n.t('bracket.protected')}</h2>
+              </div>
+              <p class="password-text">${this.i18n.t('bracket.enterPassword')}</p>
+              <input
+                type="password"
+                id="bracketPassword"
+                class="password-input"
+                placeholder="Enter password..."
+              >
+              <div id="passwordError" class="password-error" style="display:none;"></div>
+              <button class="btn btn-primary" id="bracketLoginBtn" style="width: 100%; margin-top: 15px;">
+                ${this.i18n.t('bracket.unlock')}
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      tab.innerHTML = html;
+
+      // Setup password button
+      const input = document.getElementById('bracketPassword');
+      const btn = document.getElementById('bracketLoginBtn');
+      const error = document.getElementById('passwordError');
+
+      const checkPassword = () => {
+        const pwd = input.value;
+        if (pwd === this.bracketPassword) {
+          this.authenticated = true;
+          error.style.display = 'none';
+          this.populateBracketTab(); // Reload bracket content
+        } else {
+          error.style.display = 'block';
+          error.textContent = this.i18n.t('bracket.wrongPassword');
+          input.value = '';
+        }
+      };
+
+      btn.addEventListener('click', checkPassword);
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkPassword();
+      });
+    } else {
+      // Show bracket
+      const html = `
+        <div class="container" style="margin-top: 20px;">
+          <div id="bracketSection"></div>
+          <div class="controls-section">
+            <button id="logoutBtn" class="btn btn-secondary">🔓 ${this.i18n.t('bracket.logout')}</button>
+          </div>
+        </div>
+      `;
+      tab.innerHTML = html;
+
+      // Setup logout
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        this.authenticated = false;
+        this.populateBracketTab();
+      });
+
+      // Setup bracket section
+      this.setupBracketSection();
+    }
+  }
+
+  /**
+   * Switch to a different tab
+   */
+  switchTab(tabName) {
+    this.currentTab = tabName;
+    window.appState.currentTab = tabName;
+
+    // Check authentication for bracket tab
+    if (tabName === 'bracket' && !this.authenticated) {
+      this.authenticated = false;
+    }
+
+    this.updateTabsDisplay();
+  }
+
+  /**
+   * Update tabs display (show/hide content and active state)
+   */
+  updateTabsDisplay() {
+    // Update button styles
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      const tabName = btn.dataset.tab;
+      if (tabName === this.currentTab) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    // Show/hide content
+    document.querySelectorAll('.tab-content').forEach(content => {
+      const tabName = content.dataset.tab;
+      if (tabName === this.currentTab) {
+        content.style.display = 'block';
+      } else {
+        content.style.display = 'none';
+      }
+    });
+  }
+
+  /**
+   * Generate tournament from roster
+   */
+  generateTournamentFromRoster() {
+    const input = document.getElementById('rosterInput');
+    const shuffle = document.getElementById('shuffleToggle')?.checked || false;
+    const text = input.value;
+
+    const result = this.roster.generateRoster(text, shuffle);
+
+    if (result.error) {
+      this.showError(result.error);
+      return;
+    }
+
+    // Create tournament
+    this.tournament = new DoubleElimTournament({
+      name: `Tournament (${result.teams.length} teams)`
+    });
+
+    this.tournament.initializeSeeding(result.teams);
+    this.tournament.generateBracket();
+
+    window.appState.currentTournament = this.tournament;
+    window.appState.currentRoster = result.teams;
+
+    // Save state
+    this.persistence.save('all');
+
+    // Emit event
+    this.eventBus.emit('tournament:created', {
+      tournament: this.tournament,
+      teams: result.teams.length
+    });
+
+    this.showMessage(this.i18n.t('messages.tournamentCreated', {
+      teams: result.teams.length,
+      size: this.tournament.bracket.winners.length + this.tournament.bracket.losers.length + 1
+    }));
+
+    // Switch to bracket tab and unlock
+    this.authenticated = true;
+    this.switchTab('bracket');
+    this.render();
+  }
+
+  /**
+   * Setup roster management panel
+   */
 
   /**
    * Handle players input change for pairs
@@ -620,46 +845,6 @@ class TournamentApp {
   /**
    * Generate tournament from roster
    */
-  generateTournament() {
-    const input = document.getElementById('rosterInput');
-    const shuffle = document.getElementById('shuffleToggle').checked;
-    const text = input.value;
-
-    const result = this.roster.generateRoster(text, shuffle);
-
-    if (result.error) {
-      this.showError(result.error);
-      return;
-    }
-
-    // Create tournament
-    this.tournament = new DoubleElimTournament({
-      name: `Tournament (${result.teams.length} teams)`
-    });
-
-    this.tournament.initializeSeeding(result.teams);
-    this.tournament.generateBracket();
-
-    window.appState.currentTournament = this.tournament;
-    window.appState.currentRoster = result.teams;
-
-    // Save state
-    this.persistence.save('all');
-
-    // Emit event
-    this.eventBus.emit('tournament:created', {
-      tournament: this.tournament,
-      teams: result.teams.length
-    });
-
-    this.showMessage(this.i18n.t('messages.tournamentCreated', {
-      teams: result.teams.length,
-      size: this.tournament.bracket.winners.length + this.tournament.bracket.losers.length + 1
-    }));
-
-    this.render();
-  }
-
   /**
    * Clear roster
    */
@@ -683,11 +868,15 @@ class TournamentApp {
    * Setup bracket display section
    */
   setupBracketSection() {
-    const container = document.createElement('div');
-    container.className = 'container';
-    container.id = 'bracketContainer';
-    container.style.marginBottom = 'var(--spacing-xl)';
-    document.body.appendChild(container);
+    // Find or create bracket container in the bracket tab
+    let container = document.getElementById('bracketSection');
+    if (!container) {
+      container = document.getElementById('bracketContainer');
+    }
+    if (!container) return; // Skip if no container found
+
+    // Clear previous content
+    container.innerHTML = '';
   }
 
   /**

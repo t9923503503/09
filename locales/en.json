@@ -2,6 +2,16 @@
   "app.title": "Tournament Bracket",
   "app.subtitle": "Double Elimination with True Skill seeding",
 
+  "tabs.roster": "Roster",
+  "tabs.pairs": "Mixed Doubles",
+  "tabs.bracket": "Bracket",
+
+  "bracket.protected": "Bracket Protected",
+  "bracket.enterPassword": "Enter password to access tournament bracket",
+  "bracket.unlock": "Unlock",
+  "bracket.logout": "Logout",
+  "bracket.wrongPassword": "Wrong password. Please try again.",
+
   "header.language": "Language",
   "header.languageEn": "English",
   "header.languageRu": "Русский",
