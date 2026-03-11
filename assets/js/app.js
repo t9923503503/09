@@ -1088,7 +1088,7 @@ class TournamentApp {
     const teamAClass = 'team-row' + (isWinnerA ? ' winner' : '') + (isBye ? ' bye-team' : '') + (!match.team_a_id ? ' empty' : '');
 
     html += `<div class="${teamAClass}" data-team-id="${match.team_a_id}">
-      <div class="seed-badge ${teamA ? '' : 'empty'}">${teamA ? teamA.seed : '—'}</div>
+      <div class="seed-badge ${teamA ? '' : 'empty'}">${teamA && teamA.seed ? teamA.seed : '—'}</div>
       <div class="team-info">
         <div class="team-name">${teamA ? teamA.name : this.i18n.t('bracket.tbd')}</div>
         <div class="team-stats">
@@ -1106,7 +1106,7 @@ class TournamentApp {
     const teamBClass = 'team-row' + (isWinnerB ? ' winner' : '') + (isBye ? ' bye-team' : '') + (!match.team_b_id ? ' empty' : '');
 
     html += `<div class="${teamBClass}" data-team-id="${match.team_b_id}">
-      <div class="seed-badge ${teamB ? '' : 'empty'}">${teamB ? teamB.seed : '—'}</div>
+      <div class="seed-badge ${teamB ? '' : 'empty'}">${teamB && teamB.seed ? teamB.seed : '—'}</div>
       <div class="team-info">
         <div class="team-name">${isBye && !match.team_b_id ? this.i18n.t('bracket.bye') : (teamB ? teamB.name : this.i18n.t('bracket.tbd'))}</div>
         <div class="team-stats">
