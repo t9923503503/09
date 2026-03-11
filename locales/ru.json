@@ -165,5 +165,13 @@
   "print.teamB": "Подпись пары B",
   "print.error.noGroups": "Нет групп для печати",
   "print.messages.opening": "Открытие окна печати...",
-  "print.messages.downloaded": "Протокол успешно сохранён"
+  "print.messages.downloaded": "Протокол успешно сохранён",
+
+  "stats.label": "Статистика",
+  "stats.tournamentSummary": "📊 Сводка турнира",
+  "stats.matchesCompleted": "Матчей сыграно",
+  "stats.totalBalls": "Всего мячей",
+  "stats.setsPlayed": "Сетов сыграно",
+  "stats.longestMatch": "Самый длинный матч",
+  "stats.topPairs": "Лучшие пары"
 }

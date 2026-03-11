@@ -1133,6 +1133,181 @@ class TournamentApp {
   }
 
   /**
+   * Get tournament statistics
+   */
+  getTournamentStats() {
+    const pools = window.appState.pools;
+    if (!pools) return null;
+
+    let stats = {
+      totalMatches: 0,
+      completedMatches: 0,
+      totalBalls: 0,
+      longestMatch: { score: 0, pairA: '', pairB: '' },
+      topPairs: [],
+      totalSetsPlayed: 0
+    };
+
+    // Collect all pair statistics
+    const pairStats = {};
+
+    pools.forEach(pool => {
+      pool.matches.forEach(match => {
+        stats.totalMatches++;
+
+        if (match.completed) {
+          stats.completedMatches++;
+
+          // Calculate match balls
+          const ballsA = match.setsA.reduce((a, b) => a + b, 0);
+          const ballsB = match.setsB.reduce((a, b) => a + b, 0);
+          const totalBalls = ballsA + ballsB;
+
+          stats.totalBalls += totalBalls;
+          stats.totalSetsPlayed += match.setsA.length;
+
+          // Find longest match
+          if (totalBalls > stats.longestMatch.score) {
+            stats.longestMatch = {
+              score: totalBalls,
+              pairA: match.pairA.name,
+              pairB: match.pairB.name,
+              sets: `${match.setsA.join('/')} vs ${match.setsB.join('/')}`
+            };
+          }
+
+          // Track pair wins
+          const setsWonA = match.setsA.filter((s, idx) => s > match.setsB[idx]).length;
+          const setsWonB = match.setsB.filter((s, idx) => s > match.setsA[idx]).length;
+
+          if (!pairStats[match.pairA.id]) {
+            pairStats[match.pairA.id] = { name: match.pairA.name, wins: 0, losses: 0, ballsFor: 0, ballsAgainst: 0 };
+          }
+          if (!pairStats[match.pairB.id]) {
+            pairStats[match.pairB.id] = { name: match.pairB.name, wins: 0, losses: 0, ballsFor: 0, ballsAgainst: 0 };
+          }
+
+          if (setsWonA > setsWonB) {
+            pairStats[match.pairA.id].wins++;
+            pairStats[match.pairB.id].losses++;
+          } else {
+            pairStats[match.pairB.id].wins++;
+            pairStats[match.pairA.id].losses++;
+          }
+
+          pairStats[match.pairA.id].ballsFor += ballsA;
+          pairStats[match.pairA.id].ballsAgainst += ballsB;
+          pairStats[match.pairB.id].ballsFor += ballsB;
+          pairStats[match.pairB.id].ballsAgainst += ballsA;
+        }
+      });
+    });
+
+    // Get top 3 pairs by win rate
+    stats.topPairs = Object.values(pairStats)
+      .filter(p => p.wins > 0)
+      .sort((a, b) => {
+        const winRateA = a.wins / (a.wins + a.losses);
+        const winRateB = b.wins / (b.wins + b.losses);
+        return winRateB - winRateA;
+      })
+      .slice(0, 3)
+      .map(p => ({
+        ...p,
+        winRate: ((p.wins / (p.wins + p.losses)) * 100).toFixed(1)
+      }));
+
+    return stats;
+  }
+
+  /**
+   * Display tournament statistics summary
+   */
+  displayTournamentStats() {
+    const bracketSection = document.getElementById('bracketSection');
+    if (!bracketSection) return;
+
+    const stats = this.getTournamentStats();
+    if (!stats) {
+      this.showError('No tournament data available');
+      return;
+    }
+
+    const progressPercent = stats.totalMatches > 0
+      ? Math.round((stats.completedMatches / stats.totalMatches) * 100)
+      : 0;
+
+    const html = `
+      <div class="container" style="margin-top: 20px;">
+        <div class="stats-section">
+          <h2 class="stats-title">📊 ${this.i18n.t('stats.tournamentSummary')}</h2>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">${stats.completedMatches}/${stats.totalMatches}</div>
+              <div class="stat-label">${this.i18n.t('stats.matchesCompleted')}</div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${progressPercent}%"></div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-value">${stats.totalBalls}</div>
+              <div class="stat-label">${this.i18n.t('stats.totalBalls')}</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-value">${stats.totalSetsPlayed}</div>
+              <div class="stat-label">${this.i18n.t('stats.setsPlayed')}</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-value">${stats.longestMatch.score}</div>
+              <div class="stat-label">${this.i18n.t('stats.longestMatch')}</div>
+              <div class="stat-detail">${stats.longestMatch.pairA} vs ${stats.longestMatch.pairB}</div>
+              <div class="stat-detail">${stats.longestMatch.sets || ''}</div>
+            </div>
+          </div>
+
+          <div class="top-pairs-section">
+            <h3 class="top-pairs-title">🏆 ${this.i18n.t('stats.topPairs')}</h3>
+            <div class="top-pairs-list">
+              ${stats.topPairs.map((pair, idx) => `
+                <div class="top-pair-item">
+                  <div class="top-pair-rank">#${idx + 1}</div>
+                  <div class="top-pair-info">
+                    <div class="top-pair-name">${pair.name}</div>
+                    <div class="top-pair-record">${pair.wins}W - ${pair.losses}L (${pair.winRate}%)</div>
+                  </div>
+                  <div class="top-pair-balls">
+                    <span class="balls-for">${pair.ballsFor}</span>
+                    <span class="balls-sep">|</span>
+                    <span class="balls-against">${pair.ballsAgainst}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="stats-actions">
+            <button id="backToPoolsFromStatsBtn" class="btn btn-secondary">
+              ← ${this.i18n.t('schedule.backToGroups')}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    bracketSection.innerHTML = html;
+
+    // Setup back button
+    const backBtn = document.getElementById('backToPoolsFromStatsBtn');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => this.displayPools());
+    }
+  }
+
+  /**
    * Display schedule by courts and time slots
    */
   displaySchedule() {
@@ -1158,6 +1333,9 @@ class TournamentApp {
           </div>
 
           <div class="schedule-actions">
+            <button id="statsBtn" class="btn btn-primary">
+              📊 ${this.i18n.t('stats.label')}
+            </button>
             <button id="printProtocolBtn" class="btn btn-primary">
               🖨️ ${this.i18n.t('print.title')}
             </button>
@@ -1170,6 +1348,12 @@ class TournamentApp {
     `;
 
     bracketSection.innerHTML = html;
+
+    // Setup stats button
+    const statsBtn = document.getElementById('statsBtn');
+    if (statsBtn) {
+      statsBtn.addEventListener('click', () => this.displayTournamentStats());
+    }
 
     // Setup print button
     const printBtn = document.getElementById('printProtocolBtn');
