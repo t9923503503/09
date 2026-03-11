@@ -173,5 +173,11 @@
   "stats.totalBalls": "Total Balls Played",
   "stats.setsPlayed": "Sets Played",
   "stats.longestMatch": "Longest Match",
-  "stats.topPairs": "Top Performing Pairs"
+  "stats.topPairs": "Top Performing Pairs",
+
+  "data.export": "💾 Export Backup",
+  "data.import": "📂 Import Backup",
+  "data.exportSuccess": "Tournament data exported successfully",
+  "data.importSuccess": "Tournament data imported successfully",
+  "data.importError": "Failed to import tournament data"
 }

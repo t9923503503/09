@@ -173,5 +173,11 @@
   "stats.totalBalls": "Всего мячей",
   "stats.setsPlayed": "Сетов сыграно",
   "stats.longestMatch": "Самый длинный матч",
-  "stats.topPairs": "Лучшие пары"
+  "stats.topPairs": "Лучшие пары",
+
+  "data.export": "💾 Сохранить резервную копию",
+  "data.import": "📂 Загрузить резервную копию",
+  "data.exportSuccess": "Данные турнира успешно сохранены",
+  "data.importSuccess": "Данные турнира успешно загружены",
+  "data.importError": "Ошибка загрузки данных турнира"
 }

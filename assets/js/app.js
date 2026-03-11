@@ -991,6 +991,12 @@ class TournamentApp {
           </div>
 
           <div class="pools-actions">
+            <button id="exportBtn" class="btn btn-secondary">
+              ${this.i18n.t('data.export')}
+            </button>
+            <button id="importBtn" class="btn btn-secondary">
+              ${this.i18n.t('data.import')}
+            </button>
             <button id="scheduleBtn" class="btn btn-primary">
               📅 ${this.i18n.t('schedule.tabTitle')}
             </button>
@@ -1003,6 +1009,18 @@ class TournamentApp {
     `;
 
     bracketSection.innerHTML = html;
+
+    // Setup export button
+    const exportBtn = document.getElementById('exportBtn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => this.exportTournamentData());
+    }
+
+    // Setup import button
+    const importBtn = document.getElementById('importBtn');
+    if (importBtn) {
+      importBtn.addEventListener('click', () => this.importTournamentData());
+    }
 
     // Setup schedule button
     const scheduleBtn = document.getElementById('scheduleBtn');
@@ -2199,6 +2217,63 @@ class TournamentApp {
    */
   showError(text) {
     this.showMessage(text, 'error');
+  }
+
+  /**
+   * Export tournament data as JSON backup
+   */
+  exportTournamentData() {
+    const tournamentData = {
+      timestamp: new Date().toISOString(),
+      tournament: window.appState.tournament,
+      pools: window.appState.pools,
+      roster: window.appState.currentRoster,
+      appSettings: window.appState.appSettings
+    };
+
+    this.persistence.exportTournamentJSON(tournamentData);
+    this.showMessage(this.i18n.t('data.exportSuccess'));
+  }
+
+  /**
+   * Import tournament data from JSON file
+   */
+  importTournamentData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+
+    input.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const data = await this.persistence.importTournamentJSON(file);
+
+        if (!data.tournament || !data.pools) {
+          throw new Error('Invalid tournament backup file');
+        }
+
+        // Restore data
+        window.appState.tournament = data.tournament;
+        window.appState.pools = data.pools;
+        window.appState.currentRoster = data.roster || [];
+        window.appState.appSettings = data.appSettings || window.appState.appSettings;
+
+        // Reinitialize managers
+        this.poolManager.pools = data.pools || [];
+
+        // Save to localStorage
+        this.persistence.save('all');
+
+        this.showMessage(this.i18n.t('data.importSuccess'));
+        this.render();
+      } catch (error) {
+        this.showError(`${this.i18n.t('data.importError')}: ${error.message}`);
+      }
+    });
+
+    input.click();
   }
 
   /**

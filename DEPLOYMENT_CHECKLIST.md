@@ -147,6 +147,28 @@ setTimeout(() => {
 
 ---
 
+## 💾 Data Safety: Backup Protocol
+
+### Before Starting New Tournament:
+1. Click **"💾 Save Backup"** button in Pools view
+2. Save JSON file to cloud (Google Drive, Dropbox, OneDrive)
+3. Name: `volleyball_tournament_YYYY-MM-DD.json`
+
+### If Disaster Happens:
+1. Click **"📂 Load Backup"** button
+2. Select previously saved JSON file
+3. All tournament data restored in 2 seconds
+
+### localStorage Persistence:
+- ✅ Automatic saving on every match result
+- ✅ Survives browser refresh
+- ⚠️ Cleared if user clears browser cache
+- ⚠️ Different for each browser/device
+
+**Recommendation:** Export backup every 2-3 matches during tournament!
+
+---
+
 ## 🚀 Ready for Beach!
 
 All systems operational. Safe to deploy to production.

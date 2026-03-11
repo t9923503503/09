@@ -279,3 +279,42 @@ function initPersistence(eventBus) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { PersistenceManager, initPersistence };
 }
+
+  /**
+   * Export tournament data as JSON file
+   * @param {Object} tournamentData - Full tournament state
+   * @returns {void} Downloads JSON file
+   */
+  exportTournamentJSON(tournamentData) {
+    const json = JSON.stringify(tournamentData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tournament_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  /**
+   * Import tournament data from JSON file
+   * @param {File} file - JSON file to import
+   * @returns {Promise} Resolves with imported data
+   */
+  importTournamentJSON(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          resolve(data);
+        } catch (error) {
+          reject(new Error('Invalid JSON file'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsText(file);
+    });
+  }
