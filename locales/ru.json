@@ -20,6 +20,7 @@
   "roster.subtitle": "Импорт списка команд",
   "roster.input.placeholder": "Вставьте имена команд (по одному на строку)...",
   "roster.input.label": "Имена команд",
+  "roster.input.hint": "Опционально: Добавьте рейтинг (1=сильнейший). Формат: Имя/1 или Имя\\t1",
   "roster.shuffle": "🔀 Перемешать",
   "roster.generate": "✓ Создать сетку",
   "roster.clear": "✕ Очистить",

@@ -356,6 +356,7 @@ class TournamentApp {
               class="roster-textarea"
               placeholder="${this.i18n.t('roster.input.placeholder')}"
             ></textarea>
+            <p class="roster-hint">${this.i18n.t('roster.input.hint')}</p>
           </div>
 
           <div class="roster-options">

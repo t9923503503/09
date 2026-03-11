@@ -20,6 +20,7 @@
   "roster.subtitle": "Bulk import player names",
   "roster.input.placeholder": "Paste team names (one per line)...",
   "roster.input.label": "Team Names",
+  "roster.input.hint": "Optional: Add seed rating (1=strongest). Format: Name/1 or Name\\t1",
   "roster.shuffle": "🔀 Shuffle Players",
   "roster.generate": "✓ Generate Bracket",
   "roster.clear": "✕ Clear",

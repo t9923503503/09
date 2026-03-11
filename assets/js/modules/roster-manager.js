@@ -14,24 +14,38 @@ class RosterManager {
   }
 
   /**
-   * Parse text input into team names
-   * Handles various delimiters: newline, tab, comma, semicolon
+   * Parse text input into team names with optional seeds
+   * Handles formats:
+   * - "Team Name" - no seed
+   * - "Team Name/1" - with seed
+   * - "Team Name\t2" - with tab separator
    * @param {string} text - Raw input text
-   * @returns {Array} Array of team names
+   * @returns {Array} Array of {name, seed} objects
    */
   parseNames(text) {
     if (!text || typeof text !== 'string') {
       return [];
     }
 
-    // Trim and split by various delimiters
     const lines = text
       .trim()
-      .split(/[\n\r\t;,]+/)
+      .split(/[\n\r]+/)
       .map(line => line.trim())
       .filter(line => line.length > 0);
 
-    return lines;
+    return lines.map((line, idx) => {
+      // Try to parse seed from format: "Name/1" or "Name\t1" or "Name 1"
+      const seedMatch = line.match(/^(.+?)[\s\/\t]+(\d+)\s*$/);
+
+      if (seedMatch) {
+        const name = seedMatch[1].trim();
+        const seed = parseInt(seedMatch[2], 10);
+        return { name, seed };
+      }
+
+      // No seed found, return just name
+      return { name: line, seed: null };
+    });
   }
 
   /**
@@ -75,25 +89,29 @@ class RosterManager {
   }
 
   /**
-   * Create team objects from names
-   * @param {Array} names - Team names
+   * Create team objects from parsed names with seeds
+   * @param {Array} parsedNames - Array of {name, seed} objects from parseNames()
    * @returns {Array} Team objects with auto-generated skill levels
    */
-  createTeams(names) {
-    return names.map((name, idx) => {
+  createTeams(parsedNames) {
+    return parsedNames.map((item, idx) => {
+      // Handle both old format (string) and new format ({name, seed})
+      const teamName = typeof item === 'string' ? item : item.name;
+      const seedValue = (typeof item === 'string') ? null : item.seed;
+
       // Auto-generate skill levels (1-5 for each player)
       const p1Level = Math.floor(Math.random() * 5) + 1;
       const p2Level = Math.floor(Math.random() * 5) + 1;
 
       return {
         id: `team_${idx}`,
-        name: name,
+        name: teamName,
         players: [
           { id: `p${idx * 2}`, name: `Player ${idx * 2 + 1}`, level: p1Level },
           { id: `p${idx * 2 + 1}`, name: `Player ${idx * 2 + 2}`, level: p2Level }
         ],
-        // These will be set during tournament seeding
-        seed: 0,
+        // Seed from user input (1 = strongest, higher = weaker)
+        seed: seedValue || 0,
         bye: false,
         wins: 0,
         losses: 0,
