@@ -18,6 +18,18 @@
   "roster.error.tooMany": "Maximum 256 teams allowed",
   "roster.error.parsing": "Error parsing input",
 
+  "pairs.title": "Mixed Doubles Pairs",
+  "pairs.subtitle": "Create pairs from male and female players",
+  "pairs.input.label": "Players (format: Name/M or Name/F)",
+  "pairs.input.placeholder": "John/M\nJane/F\nMike/M\nSarah/F\n...",
+  "pairs.input.hint": "Use M for male, F for female. Example: John/M or Jane/F",
+  "pairs.generate": "✓ Generate Pairs",
+  "pairs.clear": "✕ Clear",
+  "pairs.status": "Players: {total} | Males: {males} | Females: {females}",
+  "pairs.error.tooFew": "Please enter at least 2 players",
+  "pairs.error.needBoth": "Need both male and female players to create pairs",
+  "pairs.created": "Created Pairs",
+
   "bracket.winnersTitle": "⬆️ Winners Bracket",
   "bracket.losersTitle": "⬇️ Losers Bracket",
   "bracket.grandFinalTitle": "🏆 Grand Final",
@@ -70,6 +82,8 @@
   "modals.exportError": "Failed to export bracket",
 
   "messages.tournamentCreated": "Tournament created: {teams} teams, bracket size: {size}",
+  "messages.pairsCreated": "Pairs created: {count} pairs",
+  "messages.pairsCleared": "Pairs cleared",
   "messages.teamAdded": "Team '{name}' added",
   "messages.teamRenamed": "Team renamed: {oldName} → {newName}",
   "messages.matchRecorded": "Match result recorded",

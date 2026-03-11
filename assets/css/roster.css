@@ -325,3 +325,146 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ═══════════════════════════════════════════════ */
+/* PAIRS (MIXED DOUBLES) STYLES */
+/* ═══════════════════════════════════════════════ */
+
+.roster-hint {
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+  margin-top: var(--spacing-sm);
+  font-style: italic;
+}
+
+.pairs-status {
+  background: var(--dark3);
+  border-left: 4px solid var(--gold);
+  padding: var(--spacing-md);
+  border-radius: 4px;
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  color: var(--text);
+}
+
+.pairs-status.error {
+  border-left-color: var(--red);
+  color: var(--red);
+}
+
+.pairs-status.success {
+  border-left-color: var(--green);
+  color: var(--green);
+}
+
+.pairs-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.pair-item {
+  background: var(--dark3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  transition: all var(--transition-fast);
+}
+
+.pair-item:hover {
+  border-color: var(--gold);
+  background: var(--dark2);
+}
+
+.pair-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--gold);
+  color: var(--dark);
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: var(--font-size-md);
+  flex-shrink: 0;
+}
+
+.pair-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pair-name {
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-md);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pair-details {
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.player-gender-M::before {
+  content: '♂ ';
+  color: #4a90e2;
+  font-weight: bold;
+}
+
+.player-gender-F::before {
+  content: '♀ ';
+  color: #e24a4a;
+  font-weight: bold;
+}
+
+.player-gender-M,
+.player-gender-F {
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.btn-small {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  font-size: var(--font-size-lg);
+  transition: color var(--transition-fast);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-small:hover {
+  color: var(--red);
+}
+
+.btn-remove {
+  width: 28px;
+  height: 28px;
+  background: rgba(233, 69, 96, 0.1);
+  border-radius: 4px;
+}
+
+.btn-remove:hover {
+  background: rgba(233, 69, 96, 0.2);
+}
+
+@media (max-width: 768px) {
+  .pairs-list {
+    grid-template-columns: 1fr;
+  }
+}

@@ -18,6 +18,18 @@
   "roster.error.tooMany": "Максимум 256 команд",
   "roster.error.parsing": "Ошибка при парсинге",
 
+  "pairs.title": "Микст (парные разряды)",
+  "pairs.subtitle": "Составление пар из мужчин и женщин",
+  "pairs.input.label": "Игроки (формат: Имя/М или Имя/Ж)",
+  "pairs.input.placeholder": "Иван/М\nМария/Ж\nПётр/М\nАнна/Ж\n...",
+  "pairs.input.hint": "Используйте М для мужчин, Ж для женщин. Пример: Иван/М или Мария/Ж",
+  "pairs.generate": "✓ Составить пары",
+  "pairs.clear": "✕ Очистить",
+  "pairs.status": "Всего: {total} | Мужчин: {males} | Женщин: {females}",
+  "pairs.error.tooFew": "Введите минимум 2 игроков",
+  "pairs.error.needBoth": "Нужны игроки обоих полов для составления пар",
+  "pairs.created": "Составленные пары",
+
   "bracket.winnersTitle": "⬆️ Верхняя сетка",
   "bracket.losersTitle": "⬇️ Нижняя сетка",
   "bracket.grandFinalTitle": "🏆 Финал",
@@ -70,6 +82,8 @@
   "modals.exportError": "Ошибка при экспорте",
 
   "messages.tournamentCreated": "Турнир создан: {teams} команд, размер сетки: {size}",
+  "messages.pairsCreated": "Пары составлены: {count} пар",
+  "messages.pairsCleared": "Пары очищены",
   "messages.teamAdded": "Команда '{name}' добавлена",
   "messages.teamRenamed": "Переименовано: {oldName} → {newName}",
   "messages.matchRecorded": "Результат матча записан",

@@ -53,6 +53,9 @@ class TournamentApp {
       // 4. Setup roster manager
       this.roster = new RosterManager(this.eventBus, this.i18n);
 
+      // 4.5. Setup pair manager for mixed doubles
+      this.pairManager = new PairManager(this.eventBus, this.i18n);
+
       // 5. Restore saved state
       this.restoreState();
 
@@ -146,6 +149,9 @@ class TournamentApp {
 
     // Roster panel
     this.setupRosterPanel();
+
+    // Pairs (Mixed Doubles) panel
+    this.setupPairsPanel();
 
     // Bracket section
     this.setupBracketSection();
@@ -347,6 +353,229 @@ class TournamentApp {
       input.value = names;
       this.updateRosterStatus(this.roster.teams.length);
     }
+  }
+
+  /**
+   * Setup pairs (mixed doubles) management panel
+   */
+  setupPairsPanel() {
+    const html = `
+      <div class="container" style="margin-top: 20px;">
+        <div class="roster-section">
+          <div class="roster-header">
+            <h2 class="roster-title">${this.i18n.t('pairs.title')}</h2>
+            <p class="roster-subtitle">${this.i18n.t('pairs.subtitle')}</p>
+          </div>
+
+          <div class="roster-input-group">
+            <label class="roster-label">${this.i18n.t('pairs.input.label')}</label>
+            <textarea
+              id="playersInput"
+              class="roster-textarea"
+              placeholder="${this.i18n.t('pairs.input.placeholder')}"
+            ></textarea>
+            <p class="roster-hint">${this.i18n.t('pairs.input.hint')}</p>
+          </div>
+
+          <div class="roster-actions">
+            <button class="btn btn-primary" id="generatePairsBtn">
+              ${this.i18n.t('pairs.generate')}
+            </button>
+            <button class="btn btn-secondary" id="clearPairsBtn">
+              ${this.i18n.t('pairs.clear')}
+            </button>
+            <button class="btn btn-success" id="generateTournamentFromPairsBtn" style="display:none;">
+              🏆 Generate Tournament
+            </button>
+          </div>
+
+          <div class="pairs-status" id="pairsStatus" style="display:none;"></div>
+
+          <div id="pairsContainer" style="display:none; margin-top: 20px;">
+            <h3 style="color: #FFD700; margin-bottom: 15px;">${this.i18n.t('pairs.created')}</h3>
+            <div id="pairsList" class="pairs-list"></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    document.body.appendChild(container.firstElementChild);
+
+    // Setup event listeners
+    const playersInput = document.getElementById('playersInput');
+    const generateBtn = document.getElementById('generatePairsBtn');
+    const clearBtn = document.getElementById('clearPairsBtn');
+    const tournamentBtn = document.getElementById('generateTournamentFromPairsBtn');
+
+    playersInput.addEventListener('input', (e) => this.onPlayersInputChange(e));
+    generateBtn.addEventListener('click', () => this.generatePairs());
+    clearBtn.addEventListener('click', () => this.clearPairs());
+    tournamentBtn.addEventListener('click', () => this.generateTournamentFromPairs());
+  }
+
+  /**
+   * Handle players input change for pairs
+   */
+  onPlayersInputChange(e) {
+    const text = e.target.value;
+    const players = this.pairManager.parsePlayers(text);
+    this.updatePairsStatus(players);
+  }
+
+  /**
+   * Update pairs status display
+   */
+  updatePairsStatus(players) {
+    const statusEl = document.getElementById('pairsStatus');
+    const { males, females } = this.pairManager.countByGender(players);
+    const validation = this.pairManager.validatePlayers(players);
+
+    if (players.length === 0) {
+      statusEl.style.display = 'none';
+      return;
+    }
+
+    let statusText = this.i18n.t('pairs.status', {
+      total: players.length,
+      males: males,
+      females: females
+    });
+
+    if (!validation.valid) {
+      statusEl.textContent = validation.error;
+      statusEl.classList.remove('success');
+      statusEl.classList.add('error');
+    } else {
+      statusEl.textContent = statusText;
+      statusEl.classList.remove('error');
+      statusEl.classList.add('success');
+    }
+
+    statusEl.style.display = 'block';
+  }
+
+  /**
+   * Generate pairs from players input
+   */
+  generatePairs() {
+    const input = document.getElementById('playersInput');
+    const text = input.value;
+
+    const players = this.pairManager.parsePlayers(text);
+    this.pairManager.players = players;
+
+    const validation = this.pairManager.validatePlayers(players);
+    if (!validation.valid) {
+      this.showError(validation.error);
+      return;
+    }
+
+    // Create pairs
+    const pairs = this.pairManager.createPairsFromPlayers(players, 'balanced');
+    this.pairManager.pairs = pairs;
+
+    // Display pairs
+    this.displayPairs(pairs);
+
+    this.showMessage(this.i18n.t('messages.pairsCreated', {
+      count: pairs.length
+    }));
+
+    window.appState.currentRoster = this.pairManager.getPairsAsTeams();
+  }
+
+  /**
+   * Generate tournament from pairs
+   */
+  generateTournamentFromPairs() {
+    if (this.pairManager.pairs.length === 0) {
+      this.showError('No pairs to create tournament from');
+      return;
+    }
+
+    // Convert pairs to teams
+    const teams = this.pairManager.getPairsAsTeams();
+
+    // Create tournament
+    this.tournament = new DoubleElimTournament({
+      name: `Mixed Doubles Tournament (${teams.length} pairs)`
+    });
+
+    this.tournament.initializeSeeding(teams);
+    this.tournament.generateBracket();
+
+    window.appState.currentTournament = this.tournament;
+    window.appState.currentRoster = teams;
+
+    // Save state
+    this.persistence.save('all');
+
+    // Emit event
+    this.eventBus.emit('tournament:created', {
+      tournament: this.tournament,
+      teams: teams.length
+    });
+
+    this.showMessage(this.i18n.t('messages.tournamentCreated', {
+      teams: teams.length,
+      size: this.tournament.bracket.winners.length + this.tournament.bracket.losers.length + 1
+    }));
+
+    this.render();
+  }
+
+  /**
+   * Display created pairs
+   */
+  displayPairs(pairs) {
+    const container = document.getElementById('pairsContainer');
+    const list = document.getElementById('pairsList');
+    const tournamentBtn = document.getElementById('generateTournamentFromPairsBtn');
+
+    if (pairs.length === 0) {
+      container.style.display = 'none';
+      tournamentBtn.style.display = 'none';
+      return;
+    }
+
+    list.innerHTML = pairs.map((pair, idx) => `
+      <div class="pair-item">
+        <div class="pair-number">#${idx + 1}</div>
+        <div class="pair-info">
+          <div class="pair-name">${pair.name}</div>
+          <div class="pair-details">
+            ${pair.players.map(p => `<span class="player-gender-${p.gender}">${p.name}</span>`).join(' & ')}
+          </div>
+        </div>
+        <button class="btn-small btn-remove" data-pair-id="${pair.id}">✕</button>
+      </div>
+    `).join('');
+
+    container.style.display = 'block';
+    tournamentBtn.style.display = 'inline-block';
+
+    // Add remove pair listeners
+    list.querySelectorAll('.btn-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const pairId = e.target.dataset.pairId;
+        this.pairManager.removePair(pairId);
+        this.pairManager.pairs = this.pairManager.pairs.filter(p => p.id !== pairId);
+        this.displayPairs(this.pairManager.pairs);
+      });
+    });
+  }
+
+  /**
+   * Clear pairs
+   */
+  clearPairs() {
+    this.pairManager.clear();
+    document.getElementById('playersInput').value = '';
+    document.getElementById('pairsStatus').style.display = 'none';
+    document.getElementById('pairsContainer').style.display = 'none';
+    this.showMessage(this.i18n.t('messages.pairsCleared'));
   }
 
   /**
