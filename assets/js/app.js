@@ -62,6 +62,9 @@ class TournamentApp {
       // 4.5. Setup pair manager for mixed doubles
       this.pairManager = new PairManager(this.eventBus, this.i18n);
 
+      // 4.7. Setup pool manager for group stage
+      this.poolManager = new PoolManager(this.eventBus, this.i18n);
+
       // 5. Restore saved state
       this.restoreState();
 
@@ -850,9 +853,28 @@ class TournamentApp {
     // Convert pairs to teams
     const teams = this.pairManager.getPairsAsTeams();
 
+    // Check tournament format
+    const format = window.appState.tournament?.format || 'knockout';
+
+    if (format === 'groups') {
+      // Pool stage format
+      this.setupPoolTournament(teams);
+    } else {
+      // Direct elimination format
+      this.setupKnockoutTournament(teams);
+    }
+
+    this.authenticated = true;  // Auto-unlock bracket after creation
+    this.switchTab('bracket');
+  }
+
+  /**
+   * Setup knockout (direct elimination) tournament
+   */
+  setupKnockoutTournament(teams) {
     // Create tournament
     this.tournament = new DoubleElimTournament({
-      name: `Mixed Doubles Tournament (${teams.length} pairs)`
+      name: window.appState.tournament?.name || `Mixed Doubles Tournament (${teams.length} pairs)`
     });
 
     this.tournament.initializeSeeding(teams);
@@ -873,6 +895,170 @@ class TournamentApp {
     this.showMessage(this.i18n.t('messages.tournamentCreated', {
       teams: teams.length,
       size: this.tournament.bracket.winners.length + this.tournament.bracket.losers.length + 1
+    }));
+
+    this.render();
+  }
+
+  /**
+   * Setup pool (group) stage tournament
+   */
+  setupPoolTournament(teams) {
+    // Distribute pairs into pools
+    this.poolManager.distributePairs(teams, 4);
+    const pools = this.poolManager.getPools();
+
+    // Store pools in app state
+    window.appState.pools = pools;
+    window.appState.currentTournament = {
+      name: window.appState.tournament?.name || `Beach Volleyball Tournament (${teams.length} pairs)`,
+      format: 'groups',
+      pools: pools
+    };
+    window.appState.currentRoster = teams;
+
+    // Save state
+    this.persistence.save('all');
+
+    // Emit event
+    this.eventBus.emit('tournament:created', {
+      tournament: window.appState.currentTournament,
+      teams: teams.length,
+      pools: pools.length
+    });
+
+    this.showMessage(this.i18n.t('pools.messages.distributed', {
+      poolCount: pools.length,
+      size: 4
+    }));
+
+    this.render();
+  }
+
+  /**
+   * Display pools with standings
+   */
+  displayPools() {
+    const bracketSection = document.getElementById('bracketSection');
+    if (!bracketSection || !window.appState.pools) return;
+
+    const pools = window.appState.pools;
+    const html = `
+      <div class="container" style="margin-top: 20px;">
+        <div class="pools-section">
+          <h2 class="pools-title">📊 ${this.i18n.t('pools.title')}</h2>
+          <div class="pools-status">
+            <div class="pools-status-text">
+              ${this.i18n.t('pools.messages.distributed', {
+                poolCount: pools.length,
+                size: 4
+              })}
+            </div>
+          </div>
+
+          <div class="pools-container">
+            ${pools.map(pool => this.renderPoolCard(pool)).join('')}
+          </div>
+
+          <div class="pools-actions">
+            <button id="advancePoolsBtn" class="btn btn-success">
+              ${this.i18n.t('pools.advanceButton')}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    bracketSection.innerHTML = html;
+
+    // Setup advance button
+    const advanceBtn = document.getElementById('advancePoolsBtn');
+    if (advanceBtn) {
+      advanceBtn.addEventListener('click', () => this.advancePairsFromPools());
+    }
+  }
+
+  /**
+   * Render a single pool card with standings
+   */
+  renderPoolCard(pool) {
+    const standings = this.poolManager.calculateStandings(pool.id);
+
+    return `
+      <div class="pool-card">
+        <div class="pool-header">
+          <h3 class="pool-title">${pool.name}</h3>
+          <div class="pool-match-count">
+            ${this.i18n.t('pools.matchCount', {
+              completed: pool.matches.filter(m => m.completed).length,
+              total: pool.matches.length
+            })}
+          </div>
+        </div>
+
+        <table class="pool-standings-table">
+          <thead>
+            <tr>
+              <th class="pool-rank">#</th>
+              <th class="pool-pair-name">${this.i18n.t('pools.pair')}</th>
+              <th class="pool-seed">${this.i18n.t('pools.seed')}</th>
+              <th class="pool-stat">${this.i18n.t('pools.wins')}</th>
+              <th class="pool-stat">${this.i18n.t('pools.losses')}</th>
+              <th class="pool-stat points">${this.i18n.t('pools.points')}</th>
+              <th class="pool-stat ratio">${this.i18n.t('pools.setRatio')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${standings.map((standing, idx) => `
+              <tr>
+                <td class="pool-rank">${idx + 1}</td>
+                <td class="pool-pair-name">${standing.pairName}</td>
+                <td class="pool-seed">${standing.seed}</td>
+                <td class="pool-stat">${standing.wins}</td>
+                <td class="pool-stat">${standing.losses}</td>
+                <td class="pool-stat points">${standing.points}</td>
+                <td class="pool-stat ratio">${standing.setRatio}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  /**
+   * Advance top 2 pairs from each pool to playoffs
+   */
+  advancePairsFromPools() {
+    const advancing = this.poolManager.getAdvancingPairs(2);
+
+    if (advancing.length === 0) {
+      this.showError('No pairs to advance');
+      return;
+    }
+
+    // Create playoff tournament
+    this.tournament = new DoubleElimTournament({
+      name: window.appState.tournament?.name || `Playoffs (${advancing.length} pairs)`
+    });
+
+    this.tournament.initializeSeeding(advancing);
+    this.tournament.generateBracket();
+
+    window.appState.currentTournament = this.tournament;
+    window.appState.playoffTeams = advancing;
+
+    // Save state
+    this.persistence.save('all');
+
+    // Emit event
+    this.eventBus.emit('playoffs:created', {
+      tournament: this.tournament,
+      teams: advancing.length
+    });
+
+    this.showMessage(this.i18n.t('pools.messages.advanced', {
+      count: advancing.length
     }));
 
     this.render();
@@ -1002,8 +1188,23 @@ class TournamentApp {
     }
     if (!container) return; // Skip if no container found
 
-    // Clear previous content
-    container.innerHTML = '';
+    // Check if we have pools to display
+    if (window.appState.pools && window.appState.pools.length > 0) {
+      this.displayPools();
+    } else if (this.tournament) {
+      // Display regular bracket
+      container.innerHTML = '';
+    } else {
+      // Show empty state
+      container.innerHTML = `
+        <div class="bracket-empty">
+          <div class="bracket-empty-icon">🏐</div>
+          <div class="bracket-empty-text">
+            ${this.i18n.t('roster.input.placeholder')}
+          </div>
+        </div>
+      `;
+    }
   }
 
   /**

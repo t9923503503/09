@@ -468,3 +468,197 @@
     grid-template-columns: 1fr;
   }
 }
+
+/**
+ * ═══════════════════════════════════════════════
+ * POOL STAGE STYLES
+ * ═══════════════════════════════════════════════
+ */
+
+.pools-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.pool-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: var(--spacing-lg);
+  overflow: hidden;
+}
+
+.pool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--gold);
+}
+
+.pool-title {
+  font-size: var(--font-size-lg);
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.pool-match-count {
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+  background: rgba(255, 215, 0, 0.1);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 4px;
+}
+
+.pool-standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--spacing-lg);
+}
+
+.pool-standings-table thead {
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.pool-standings-table th {
+  text-align: left;
+  padding: var(--spacing-sm);
+  color: var(--gold);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+
+.pool-standings-table td {
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--font-size-md);
+}
+
+.pool-standings-table tr:hover {
+  background: rgba(255, 215, 0, 0.03);
+}
+
+.pool-rank {
+  width: 30px;
+  text-align: center;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.pool-pair-name {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.pool-seed {
+  text-align: center;
+  color: var(--muted);
+}
+
+.pool-stat {
+  text-align: center;
+  color: var(--text);
+}
+
+.pool-stat.points {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.pool-stat.ratio {
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+}
+
+.pools-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.pools-title {
+  font-size: var(--font-size-xl);
+  color: var(--gold);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.pools-status {
+  background: rgba(255, 215, 0, 0.05);
+  padding: var(--spacing-md);
+  border-radius: 6px;
+  margin-bottom: var(--spacing-lg);
+  border-left: 3px solid var(--gold);
+}
+
+.pools-status-text {
+  color: var(--text);
+  font-size: var(--font-size-md);
+}
+
+.pool-matches-list {
+  margin-bottom: var(--spacing-lg);
+}
+
+.pool-match-item {
+  background: rgba(0, 0, 0, 0.2);
+  padding: var(--spacing-md);
+  border-radius: 6px;
+  margin-bottom: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+}
+
+.pool-match-teams {
+  flex: 1;
+}
+
+.pool-match-vs {
+  color: var(--muted);
+  margin: 0 var(--spacing-sm);
+}
+
+.pool-match-status {
+  background: rgba(255, 215, 0, 0.1);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 4px;
+  color: var(--gold);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.pools-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .pools-container {
+    grid-template-columns: 1fr;
+  }
+
+  .pool-standings-table {
+    font-size: var(--font-size-sm);
+  }
+
+  .pool-standings-table th,
+  .pool-standings-table td {
+    padding: var(--spacing-xs);
+  }
+
+  .pool-title {
+    font-size: var(--font-size-md);
+  }
+}

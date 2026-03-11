@@ -111,5 +111,24 @@
   "settings.courts.count": "Количество площадок",
   "settings.sets.format": "Формат сета",
   "settings.sets.regular": "Стандартный (15-15-15)",
-  "settings.sets.pro": "Профессиональный (21-21-15)"
+  "settings.sets.pro": "Профессиональный (21-21-15)",
+
+  "pools.title": "📊 Групповой этап",
+  "pools.poolLabel": "Группа {number}",
+  "pools.standings": "Таблица группы",
+  "pools.rank": "№",
+  "pools.pair": "Пара",
+  "pools.seed": "Сид",
+  "pools.matches": "М",
+  "pools.wins": "В",
+  "pools.losses": "П",
+  "pools.points": "Очки",
+  "pools.setRatio": "СО",
+  "pools.ballRatio": "БО",
+  "pools.roundRobin": "Круговой формат",
+  "pools.matchCount": "{completed}/{total} матчей",
+  "pools.advanceButton": "✓ Добавить топ-2 в плей-офф",
+  "pools.advancing": "Добавление пар...",
+  "pools.messages.distributed": "Пары распределены: {poolCount} групп по {size}",
+  "pools.messages.advanced": "Добавлено {count} пар в плей-офф"
 }
