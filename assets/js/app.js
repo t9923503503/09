@@ -475,6 +475,9 @@ class TournamentApp {
           <button class="tab-btn" data-tab="leaderboard">
             📊 ${this.i18n.t('tabs.leaderboard')}
           </button>
+          <button class="tab-btn" data-tab="scoring">
+            ⚡ ${this.i18n.t('tabs.scoring')}
+          </button>
         </div>
       </div>
     `;
@@ -504,6 +507,7 @@ class TournamentApp {
         <div id="pairsTab" class="tab-content" data-tab="pairs" style="display:none;"></div>
         <div id="bracketTab" class="tab-content" data-tab="bracket" style="display:none;"></div>
         <div id="leaderboardTab" class="tab-content" data-tab="leaderboard" style="display:none;"></div>
+        <div id="scoringTab" class="tab-content" data-tab="scoring" style="display:none;"></div>
       </div>
     `;
 
@@ -516,6 +520,7 @@ class TournamentApp {
     this.populatePairsTab();
     this.populateBracketTab();
     this.populateLeaderboardTab();
+    this.populateScoringTab();
   }
 
   /**
@@ -2545,6 +2550,168 @@ class TournamentApp {
         </tr>
       `).join('');
     }
+  }
+
+  /**
+   * Populate scoring tab with live match score entry
+   */
+  populateScoringTab() {
+    const tab = document.getElementById('scoringTab');
+    if (!tab) return;
+
+    // Check if tournament exists
+    if (!this.tournament || !this.tournament.matches) {
+      tab.innerHTML = `
+        <div class="container" style="margin-top: 20px;">
+          <div class="empty-state" style="text-align:center; padding: 60px 20px;">
+            <p style="font-size:18px; color:#999;">${this.i18n.t('scoring.noBracket')}</p>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // Get active and completed matches
+    const allMatches = Object.values(this.tournament.matches || {});
+    const activeMatches = allMatches.filter(m => m.status === 'pending' || m.status === 'in_progress');
+    const completedMatches = allMatches.filter(m => m.status === 'completed');
+
+    const html = `
+      <div class="container" style="margin-top: 20px;">
+        <div class="scoring-section">
+
+          <!-- Header -->
+          <div class="leaderboard-header">
+            <h2>${this.i18n.t('scoring.title')}</h2>
+            <p>${this.i18n.t('scoring.subtitle')}</p>
+          </div>
+
+          <!-- Active Matches Section -->
+          <div style="margin: 20px 0;">
+            <h3>${this.i18n.t('scoring.activeMatches')} (${activeMatches.length})</h3>
+            ${activeMatches.length === 0 ? `
+              <p style="color: #999;">${this.i18n.t('scoring.noPendingMatches')}</p>
+            ` : `
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+                ${activeMatches.map(match => this.renderScoringCard(match)).join('')}
+              </div>
+            `}
+          </div>
+
+          <!-- Completed Matches Section -->
+          <div style="margin: 30px 0;">
+            <h3>${this.i18n.t('scoring.completedMatches')} (${completedMatches.length})</h3>
+            ${completedMatches.length === 0 ? `
+              <p style="color: #999;">No completed matches yet</p>
+            ` : `
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+                ${completedMatches.slice(0, 10).map(match => this.renderScoringCard(match, true)).join('')}
+              </div>
+            `}
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    tab.innerHTML = html;
+    this.setupScoringListeners();
+  }
+
+  /**
+   * Render individual scoring card
+   */
+  renderScoringCard(match, isCompleted = false) {
+    const teamA = this.tournament.teams.find(t => t.id === match.team_a_id);
+    const teamB = this.tournament.teams.find(t => t.id === match.team_b_id);
+
+    const teamAName = teamA ? this.escapeHtml(teamA.name) : (match.team_a_id ? '?' : 'BYE');
+    const teamBName = teamB ? this.escapeHtml(teamB.name) : (match.team_b_id ? '?' : 'BYE');
+
+    if (isCompleted) {
+      return `
+        <div style="border: 1px solid #444; border-radius: 8px; padding: 15px; background: #1a1a25;">
+          <div style="font-size: 12px; color: #999; margin-bottom: 10px;">
+            ${match.bracket} - ${this.i18n.t('bracket.roundLabel').replace('{round}', match.round)}
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+            <div style="flex: 1;">${teamAName}</div>
+            <div style="font-weight: bold; color: #FFD700; min-width: 50px; text-align: center;">
+              ${match.score_a} : ${match.score_b}
+            </div>
+            <div style="flex: 1; text-align: right;">${teamBName}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div style="border: 1px solid #555; border-radius: 8px; padding: 15px; background: #1a1a25;">
+        <div style="font-size: 12px; color: #999; margin-bottom: 10px;">
+          ${match.bracket} - ${this.i18n.t('bracket.roundLabel').replace('{round}', match.round)}
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 15px;">
+          <div style="flex: 1; font-size: 14px;">${teamAName}</div>
+          <div style="flex: 1; text-align: center;">
+            <input type="number" data-match-id="${match.id}" data-team="a"
+              value="${match.score_a}" min="0" max="99"
+              style="width: 50px; padding: 5px; text-align: center; background: #0d0d1a; color: #FFD700; border: 1px solid #444; border-radius: 4px;">
+          </div>
+          <div style="flex: 1; text-align: right; font-size: 14px;">${teamBName}</div>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 10px;">
+          <input type="number" data-match-id="${match.id}" data-team="b"
+            value="${match.score_b}" min="0" max="99"
+            style="width: 50px; padding: 5px; text-align: center; background: #0d0d1a; color: #FFD700; border: 1px solid #444; border-radius: 4px;">
+        </div>
+        <button class="btn btn-primary" style="width: 100%;" onclick="window.app.saveMatchScore('${match.id}')">
+          ✓ ${this.i18n.t('scoring.save')}
+        </button>
+      </div>
+    `;
+  }
+
+  /**
+   * Setup scoring event listeners
+   */
+  setupScoringListeners() {
+    // Listeners are set up via inline onclick in the HTML
+  }
+
+  /**
+   * Save match score
+   */
+  saveMatchScore(matchId) {
+    const match = this.tournament.matches[matchId];
+    if (!match) return;
+
+    // Get score inputs
+    const scoreAInput = document.querySelector(`input[data-match-id="${matchId}"][data-team="a"]`);
+    const scoreBInput = document.querySelector(`input[data-match-id="${matchId}"][data-team="b"]`);
+
+    if (!scoreAInput || !scoreBInput) return;
+
+    const scoreA = parseInt(scoreAInput.value) || 0;
+    const scoreB = parseInt(scoreBInput.value) || 0;
+
+    // Update match
+    match.score_a = scoreA;
+    match.score_b = scoreB;
+    match.status = 'completed';
+    match.winner_id = scoreA > scoreB ? match.team_a_id : (scoreB > scoreA ? match.team_b_id : null);
+    match.updatedAt = new Date().toISOString();
+
+    // Save to persistence
+    this.persistence.saveTournament(this.tournament);
+
+    // Show success message
+    this.showMessage(this.i18n.t('scoring.scoreSaved'));
+
+    // Refresh scoring tab
+    this.populateScoringTab();
+
+    // Emit event for other modules
+    this.eventBus.emit('match:scored', { match });
   }
 
   /**

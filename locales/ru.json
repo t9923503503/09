@@ -5,6 +5,8 @@
   "tabs.roster": "Ростер",
   "tabs.pairs": "Микст",
   "tabs.bracket": "Сетка",
+  "tabs.leaderboard": "Рейтинг сезона",
+  "tabs.scoring": "Ввод результатов",
 
   "bracket.protected": "Сетка защищена",
   "bracket.enterPassword": "Введите пароль для доступа к турнирной сетке",
@@ -181,8 +183,6 @@
   "data.importSuccess": "Данные турнира успешно загружены",
   "data.importError": "Ошибка загрузки данных турнира",
 
-  "tabs.leaderboard": "Рейтинг сезона",
-
   "leaderboard.title": "📊 Рейтинг сезона",
   "leaderboard.subtitle": "Рейтинги игроков и история турниров",
   "leaderboard.rank": "Место",
@@ -194,6 +194,20 @@
   "leaderboard.tournaments": "Турниров",
   "leaderboard.sortBy": "Сортировать по",
   "leaderboard.empty": "В рейтинге ещё нет игроков. Завершите турнир, чтобы увидеть рейтинги!",
+
+  "scoring.title": "⚡ Ввод результатов матчей",
+  "scoring.subtitle": "Выберите матч и введите результат",
+  "scoring.noBracket": "Турнир не создан. Создайте ростер первым!",
+  "scoring.selectMatch": "Выберите матч...",
+  "scoring.teamA": "Команда A",
+  "scoring.teamB": "Команда B",
+  "scoring.score": "Результат",
+  "scoring.save": "✓ Сохранить результат",
+  "scoring.cancel": "✕ Отмена",
+  "scoring.scoreSaved": "Результат сохранён!",
+  "scoring.activeMatches": "Активные матчи",
+  "scoring.completedMatches": "Завершённые матчи",
+  "scoring.noPendingMatches": "Нет активных матчей",
 
   "tournament.completed": "Турнир завершён!",
   "tournament.completedMessage": "Турнир завершился. Архивировать результаты и обновить рейтинг?",

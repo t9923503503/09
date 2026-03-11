@@ -5,6 +5,8 @@
   "tabs.roster": "Roster",
   "tabs.pairs": "Mixed Doubles",
   "tabs.bracket": "Bracket",
+  "tabs.leaderboard": "Season Ratings",
+  "tabs.scoring": "Live Scoring",
 
   "bracket.protected": "Bracket Protected",
   "bracket.enterPassword": "Enter password to access tournament bracket",
@@ -181,8 +183,6 @@
   "data.importSuccess": "Tournament data imported successfully",
   "data.importError": "Failed to import tournament data",
 
-  "tabs.leaderboard": "Leaderboard",
-
   "leaderboard.title": "📊 Season Leaderboard",
   "leaderboard.subtitle": "Player rankings and tournament history",
   "leaderboard.rank": "Rank",
@@ -194,6 +194,20 @@
   "leaderboard.tournaments": "Tournaments",
   "leaderboard.sortBy": "Sort by",
   "leaderboard.empty": "No players in leaderboard yet. Complete a tournament to see rankings!",
+
+  "scoring.title": "⚡ Match Scoring",
+  "scoring.subtitle": "Select a match and enter the result",
+  "scoring.noBracket": "Tournament not created. Create a roster first!",
+  "scoring.selectMatch": "Select a match...",
+  "scoring.teamA": "Team A",
+  "scoring.teamB": "Team B",
+  "scoring.score": "Score",
+  "scoring.save": "✓ Save Score",
+  "scoring.cancel": "✕ Cancel",
+  "scoring.scoreSaved": "Score saved!",
+  "scoring.activeMatches": "Active Matches",
+  "scoring.completedMatches": "Completed Matches",
+  "scoring.noPendingMatches": "No active matches",
 
   "tournament.completed": "Tournament Complete!",
   "tournament.completedMessage": "The tournament has finished. Archive results and update the leaderboard?",
