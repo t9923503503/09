@@ -66,6 +66,9 @@ class TournamentApp {
       // 4.7. Setup pool manager for group stage
       this.poolManager = new PoolManager(this.eventBus, this.i18n);
 
+      // 4.8. Setup court manager for scheduling
+      this.courtManager = new CourtManager(this.eventBus, this.i18n);
+
       // 5. Restore saved state
       this.restoreState();
 
@@ -909,12 +912,34 @@ class TournamentApp {
     this.poolManager.distributePairs(teams, 4);
     const pools = this.poolManager.getPools();
 
-    // Store pools in app state
+    // Initialize courts (from settings)
+    const courtCount = window.appState.tournament?.courts || 1;
+    this.courtManager.initializeCourts(courtCount);
+
+    // Collect all matches from all pools for scheduling
+    const allMatches = [];
+    pools.forEach(pool => {
+      pool.matches.forEach(match => {
+        allMatches.push({
+          id: match.id,
+          pairA: match.pairA,
+          pairB: match.pairB,
+          poolId: pool.id
+        });
+      });
+    });
+
+    // Auto-schedule matches
+    this.courtManager.autoScheduleMatches(allMatches);
+
+    // Store in app state
     window.appState.pools = pools;
+    window.appState.schedule = this.courtManager.getSchedule();
     window.appState.currentTournament = {
       name: window.appState.tournament?.name || `Beach Volleyball Tournament (${teams.length} pairs)`,
       format: 'groups',
-      pools: pools
+      pools: pools,
+      courts: courtCount
     };
     window.appState.currentRoster = teams;
 
@@ -925,7 +950,8 @@ class TournamentApp {
     this.eventBus.emit('tournament:created', {
       tournament: window.appState.currentTournament,
       teams: teams.length,
-      pools: pools.length
+      pools: pools.length,
+      courts: courtCount
     });
 
     this.showMessage(this.i18n.t('pools.messages.distributed', {
@@ -962,6 +988,9 @@ class TournamentApp {
           </div>
 
           <div class="pools-actions">
+            <button id="scheduleBtn" class="btn btn-primary">
+              📅 ${this.i18n.t('schedule.tabTitle')}
+            </button>
             <button id="advancePoolsBtn" class="btn btn-success">
               ${this.i18n.t('pools.advanceButton')}
             </button>
@@ -971,6 +1000,12 @@ class TournamentApp {
     `;
 
     bracketSection.innerHTML = html;
+
+    // Setup schedule button
+    const scheduleBtn = document.getElementById('scheduleBtn');
+    if (scheduleBtn) {
+      scheduleBtn.addEventListener('click', () => this.displaySchedule());
+    }
 
     // Setup advance button
     const advanceBtn = document.getElementById('advancePoolsBtn');
@@ -1092,6 +1127,75 @@ class TournamentApp {
     }));
 
     this.render();
+  }
+
+  /**
+   * Display schedule by courts and time slots
+   */
+  displaySchedule() {
+    const bracketSection = document.getElementById('bracketSection');
+    if (!bracketSection) return;
+
+    const schedule = this.courtManager.getSchedule();
+    const courts = this.courtManager.getCourts();
+
+    const html = `
+      <div class="container" style="margin-top: 20px;">
+        <div class="schedule-section">
+          <h2 class="schedule-title">📅 ${this.i18n.t('schedule.title')}</h2>
+
+          <div class="schedule-info">
+            <span>${this.i18n.t('schedule.courts')}: ${courts.length}</span>
+            <span>|</span>
+            <span>${this.i18n.t('schedule.progress')}: ${this.courtManager.getUtilization()}%</span>
+          </div>
+
+          <div class="schedule-timeline">
+            ${schedule.map(timeSlot => this.renderTimeSlot(timeSlot)).join('')}
+          </div>
+
+          <div class="schedule-actions">
+            <button id="backToPoolsBtn" class="btn btn-secondary">
+              ← ${this.i18n.t('schedule.backToGroups')}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    bracketSection.innerHTML = html;
+
+    // Setup back button
+    const backBtn = document.getElementById('backToPoolsBtn');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => this.displayPools());
+    }
+  }
+
+  /**
+   * Render a time slot in the schedule
+   */
+  renderTimeSlot(timeSlot) {
+    return `
+      <div class="time-slot">
+        <div class="time-slot-header">
+          <h3 class="time-label">🕐 ${timeSlot.startTime}</h3>
+        </div>
+        <div class="time-slot-matches">
+          ${timeSlot.matches.map(match => `
+            <div class="scheduled-match ${match.completed ? 'completed' : ''}">
+              <div class="match-court">Court ${match.courtNumber}</div>
+              <div class="match-info">
+                <span class="match-team-a">${match.matchData.pairA.name}</span>
+                <span class="match-vs">vs</span>
+                <span class="match-team-b">${match.matchData.pairB.name}</span>
+              </div>
+              <div class="match-time">${match.duration} min</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
   }
 
   /**

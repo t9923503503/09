@@ -139,5 +139,13 @@
   "sets.setLabel": "Сет {number}",
   "sets.save": "Сохранить результат",
   "sets.error.noScores": "Введите хотя бы один результат сета",
-  "sets.error.invalidScore": "Некорректный результат"
+  "sets.error.invalidScore": "Некорректный результат",
+
+  "schedule.title": "📅 Расписание матчей",
+  "schedule.courts": "Площадки",
+  "schedule.progress": "Готовность",
+  "schedule.backToGroups": "Вернуться к группам",
+  "schedule.tabTitle": "Расписание",
+  "schedule.courtLabel": "Площадка {number}",
+  "schedule.noMatches": "Матчей не запланировано"
 }

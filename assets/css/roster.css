@@ -834,3 +834,149 @@
     flex-wrap: wrap;
   }
 }
+
+/**
+ * ═══════════════════════════════════════════════
+ * SCHEDULE STYLES
+ * ═══════════════════════════════════════════════
+ */
+
+.schedule-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.schedule-title {
+  font-size: var(--font-size-xl);
+  color: var(--gold);
+  margin-bottom: var(--spacing-lg);
+}
+
+.schedule-info {
+  background: rgba(255, 215, 0, 0.05);
+  padding: var(--spacing-md);
+  border-radius: 6px;
+  margin-bottom: var(--spacing-lg);
+  border-left: 3px solid var(--gold);
+  display: flex;
+  gap: var(--spacing-lg);
+  font-size: var(--font-size-md);
+  color: var(--text);
+}
+
+.schedule-timeline {
+  margin-bottom: var(--spacing-lg);
+}
+
+.time-slot {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin-bottom: var(--spacing-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.time-slot-header {
+  background: rgba(255, 215, 0, 0.1);
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border);
+}
+
+.time-label {
+  font-size: var(--font-size-lg);
+  color: var(--gold);
+  margin: 0;
+  font-weight: 600;
+}
+
+.time-slot-matches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+}
+
+.scheduled-match {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: var(--spacing-md);
+  transition: all var(--transition-fast);
+}
+
+.scheduled-match:hover {
+  border-color: var(--gold);
+  background: rgba(255, 215, 0, 0.03);
+}
+
+.scheduled-match.completed {
+  opacity: 0.6;
+  border-color: #4caf50;
+  background: rgba(76, 175, 80, 0.05);
+}
+
+.match-court {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--dark1);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 4px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.match-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.match-team-a,
+.match-team-b {
+  font-size: var(--font-size-sm);
+  color: var(--text);
+  word-break: break-word;
+}
+
+.match-team-a {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.match-vs {
+  color: var(--muted);
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
+
+.match-time {
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+  text-align: right;
+}
+
+.schedule-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+  .time-slot-matches {
+    grid-template-columns: 1fr;
+  }
+
+  .schedule-info {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .scheduled-match {
+    padding: var(--spacing-md);
+  }
+}

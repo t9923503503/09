@@ -139,5 +139,13 @@
   "sets.setLabel": "Set {number}",
   "sets.save": "Save Result",
   "sets.error.noScores": "Please enter at least one set score",
-  "sets.error.invalidScore": "Invalid score entered"
+  "sets.error.invalidScore": "Invalid score entered",
+
+  "schedule.title": "📅 Match Schedule",
+  "schedule.courts": "Courts",
+  "schedule.progress": "Progress",
+  "schedule.backToGroups": "Back to Groups",
+  "schedule.tabTitle": "Schedule",
+  "schedule.courtLabel": "Court {number}",
+  "schedule.noMatches": "No matches scheduled"
 }
