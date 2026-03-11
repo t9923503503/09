@@ -69,6 +69,9 @@ class TournamentApp {
       // 4.8. Setup court manager for scheduling
       this.courtManager = new CourtManager(this.eventBus, this.i18n);
 
+      // 4.9. Setup print manager for tournament protocols
+      this.printManager = new PrintManager(this.eventBus, this.i18n);
+
       // 5. Restore saved state
       this.restoreState();
 
@@ -1155,6 +1158,9 @@ class TournamentApp {
           </div>
 
           <div class="schedule-actions">
+            <button id="printProtocolBtn" class="btn btn-primary">
+              🖨️ ${this.i18n.t('print.title')}
+            </button>
             <button id="backToPoolsBtn" class="btn btn-secondary">
               ← ${this.i18n.t('schedule.backToGroups')}
             </button>
@@ -1164,6 +1170,12 @@ class TournamentApp {
     `;
 
     bracketSection.innerHTML = html;
+
+    // Setup print button
+    const printBtn = document.getElementById('printProtocolBtn');
+    if (printBtn) {
+      printBtn.addEventListener('click', () => this.openPrintDialog());
+    }
 
     // Setup back button
     const backBtn = document.getElementById('backToPoolsBtn');
@@ -1196,6 +1208,97 @@ class TournamentApp {
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Open print options dialog
+   */
+  openPrintDialog() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'printModal';
+
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>🖨️ ${this.i18n.t('print.title')}</h3>
+          <button class="modal-close">✕</button>
+        </div>
+        <div class="modal-body">
+          <p>${this.i18n.t('print.selectFormat')}</p>
+          <div class="print-options">
+            <button class="btn btn-primary print-option" data-action="print">
+              🖨️ ${this.i18n.t('print.printDirect')}
+            </button>
+            <button class="btn btn-secondary print-option" data-action="download">
+              💾 ${this.i18n.t('print.downloadHTML')}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Setup close button
+    const closeBtn = modal.querySelector('.modal-close');
+    closeBtn.addEventListener('click', () => modal.remove());
+
+    // Setup print options
+    const printBtns = modal.querySelectorAll('.print-option');
+    printBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const action = e.target.closest('button').dataset.action;
+        modal.remove();
+
+        if (action === 'print') {
+          this.printPoolProtocol();
+        } else if (action === 'download') {
+          this.downloadPoolProtocol();
+        }
+      });
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+  }
+
+  /**
+   * Print tournament protocol
+   */
+  printPoolProtocol() {
+    const pools = window.appState.pools;
+    if (!pools || pools.length === 0) {
+      this.showError(this.i18n.t('print.error.noGroups'));
+      return;
+    }
+
+    const tournamentName = window.appState.tournament?.name || 'Tournament';
+    const html = this.printManager.generatePoolProtocol(tournamentName, pools, 3);
+
+    this.printManager.openPrintDialog(html);
+    this.showMessage(this.i18n.t('print.messages.opening'));
+  }
+
+  /**
+   * Download tournament protocol as HTML file
+   */
+  downloadPoolProtocol() {
+    const pools = window.appState.pools;
+    if (!pools || pools.length === 0) {
+      this.showError(this.i18n.t('print.error.noGroups'));
+      return;
+    }
+
+    const tournamentName = window.appState.tournament?.name || 'Tournament';
+    const html = this.printManager.generatePoolProtocol(tournamentName, pools, 3);
+    const filename = `${tournamentName.replace(/\s+/g, '_')}_protocol.html`;
+
+    this.printManager.downloadAsHTML(html, filename);
+    this.showMessage(this.i18n.t('print.messages.downloaded'));
   }
 
   /**

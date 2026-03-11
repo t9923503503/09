@@ -147,5 +147,23 @@
   "schedule.backToGroups": "Back to Groups",
   "schedule.tabTitle": "Schedule",
   "schedule.courtLabel": "Court {number}",
-  "schedule.noMatches": "No matches scheduled"
+  "schedule.noMatches": "No matches scheduled",
+
+  "print.title": "🖨️ Print Protocol",
+  "print.documentTitle": "Tournament Protocol",
+  "print.protocolHeader": "Match Score Protocol",
+  "print.selectFormat": "Select print format:",
+  "print.printDirect": "Print Directly",
+  "print.downloadHTML": "Download HTML",
+  "print.set": "Set",
+  "print.result": "Result",
+  "print.setLabel": "Set {number}",
+  "print.matchLabel": "Match {number}",
+  "print.matchResult": "Match Result",
+  "print.referee": "Referee Signature",
+  "print.teamA": "Team A Signature",
+  "print.teamB": "Team B Signature",
+  "print.error.noGroups": "No groups to print",
+  "print.messages.opening": "Opening print dialog...",
+  "print.messages.downloaded": "Protocol downloaded successfully"
 }

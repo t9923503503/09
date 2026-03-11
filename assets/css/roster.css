@@ -980,3 +980,45 @@
     padding: var(--spacing-md);
   }
 }
+
+/**
+ * ═══════════════════════════════════════════════
+ * PRINT OPTIONS MODAL STYLES
+ * ═══════════════════════════════════════════════
+ */
+
+.print-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+}
+
+.print-option {
+  padding: var(--spacing-lg);
+  font-size: var(--font-size-md);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.print-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+@media print {
+  .modal-overlay,
+  .pools-actions,
+  .schedule-actions,
+  .pool-matches-list,
+  .schedule-info,
+  .btn {
+    display: none !important;
+  }
+
+  .sheet {
+    page-break-after: always;
+    page-break-inside: avoid;
+  }
+}

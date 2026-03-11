@@ -147,5 +147,23 @@
   "schedule.backToGroups": "Вернуться к группам",
   "schedule.tabTitle": "Расписание",
   "schedule.courtLabel": "Площадка {number}",
-  "schedule.noMatches": "Матчей не запланировано"
+  "schedule.noMatches": "Матчей не запланировано",
+
+  "print.title": "🖨️ Печать протокола",
+  "print.documentTitle": "Протокол турнира",
+  "print.protocolHeader": "Протокол результатов матчей",
+  "print.selectFormat": "Выберите формат печати:",
+  "print.printDirect": "Печать",
+  "print.downloadHTML": "Сохранить HTML",
+  "print.set": "Сет",
+  "print.result": "Результат",
+  "print.setLabel": "Сет {number}",
+  "print.matchLabel": "Матч {number}",
+  "print.matchResult": "Результат матча",
+  "print.referee": "Подпись судьи",
+  "print.teamA": "Подпись пары A",
+  "print.teamB": "Подпись пары B",
+  "print.error.noGroups": "Нет групп для печати",
+  "print.messages.opening": "Открытие окна печати...",
+  "print.messages.downloaded": "Протокол успешно сохранён"
 }
