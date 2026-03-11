@@ -198,5 +198,19 @@
   "tournament.completed": "Tournament Complete!",
   "tournament.completedMessage": "The tournament has finished. Archive results and update the leaderboard?",
   "tournament.archiveAndFinish": "Archive & Finish",
-  "tournament.continue": "Continue"
+  "tournament.continue": "Continue",
+
+  "header.share": "Share Tournament",
+
+  "qr.instruction": "Scan this QR code on your phone to view live tournament updates in real-time",
+  "qr.copyUrl": "Copy Link",
+  "qr.download": "Download QR",
+  "qr.copied": "Link copied to clipboard!",
+  "qr.copyFailed": "Failed to copy link",
+  "qr.downloaded": "QR code downloaded",
+  "qr.downloadFailed": "Failed to download QR code",
+  "qr.error": "Failed to generate QR code",
+
+  "public.lastUpdated": "Updated",
+  "public.autoRefresh": "This page auto-refreshes every 3 seconds"
 }

@@ -31,7 +31,10 @@ class TournamentApp {
     this.i18n = null;
     this.tournament = null;
     this.tournamentCompleteModalShown = false;
-    this.currentTab = 'roster';      // Active tab: 'roster', 'pairs', 'bracket'
+    this.publicMode = this.detectPublicMode();  // Check for ?mode=public
+    this.qrManager = null;
+    this.autoRefreshInterval = null;
+    this.currentTab = this.publicMode ? 'leaderboard' : 'roster'; // Auto-switch in public mode
     this.authenticated = false;       // Password authentication
     this.bracketPassword = '2525';    // Protected bracket password
     this.zoomLevel = 1;
@@ -39,6 +42,15 @@ class TournamentApp {
     this.panY = 0;
 
     this.init();
+  }
+
+  /**
+   * Detect if running in public view mode
+   * @returns {boolean} True if ?mode=public in URL
+   */
+  detectPublicMode() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('mode') === 'public';
   }
 
   /**
@@ -79,6 +91,9 @@ class TournamentApp {
       // Restore archive and player stats
       this.seasonManager.archive = this.persistence.restoreArchive();
       this.seasonManager.playerStats = this.persistence.restorePlayerStats();
+
+      // 5.1. Setup QR manager for public view
+      this.qrManager = new QRManager();
 
       // 5. Restore saved state
       this.restoreState();
@@ -182,6 +197,11 @@ class TournamentApp {
 
     // Status bar
     this.setupStatusBar();
+
+    // Auto-refresh in public mode
+    if (this.publicMode) {
+      this.setupAutoRefresh();
+    }
   }
 
   /**
@@ -210,6 +230,9 @@ class TournamentApp {
             </div>
           </div>
           <div class="header-right">
+            <button class="header-btn" id="shareBtn" title="Share Tournament QR">
+              📱
+            </button>
             <button class="header-btn" id="settingsBtn" title="Tournament Settings">
               ⚙️
             </button>
@@ -261,9 +284,19 @@ class TournamentApp {
       });
     });
 
-    // Setup settings button
+    // Setup share button (visible in all modes)
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', () => this.showQRModal());
+    }
+
+    // Setup settings button (hidden in public mode)
     const settingsBtn = document.getElementById('settingsBtn');
-    settingsBtn.addEventListener('click', () => this.openTournamentSettings());
+    if (this.publicMode) {
+      settingsBtn.style.display = 'none';
+    } else {
+      settingsBtn.addEventListener('click', () => this.openTournamentSettings());
+    }
 
     this.updateLanguageDisplay();
   }
@@ -1775,6 +1808,9 @@ class TournamentApp {
    * Setup control buttons
    */
   setupControls() {
+    // Skip control buttons in public mode
+    if (this.publicMode) return;
+
     const html = `
       <div class="container" style="margin-bottom: var(--spacing-xl);">
         <div class="controls-section">
@@ -2508,6 +2544,156 @@ class TournamentApp {
           <td>${player.participations}</td>
         </tr>
       `).join('');
+    }
+  }
+
+  /**
+   * Show QR code modal for sharing tournament link
+   */
+  showQRModal() {
+    // Build public URL with ?mode=public
+    const baseUrl = window.location.href.split('?')[0];
+    const publicUrl = baseUrl + '?mode=public';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'qrModal';
+    modal.innerHTML = `
+      <div class="modal-content qr-modal">
+        <div class="modal-header">
+          <h2>📱 ${this.i18n.t('header.share')}</h2>
+          <button class="modal-close" id="closeQRModal">✕</button>
+        </div>
+        <div class="modal-body qr-body">
+          <p>${this.i18n.t('qr.instruction')}</p>
+          <div id="qrcodeContainer" style="display: flex; justify-content: center; margin: 20px 0;"></div>
+          <p style="font-size: 12px; color: #999; margin-top: 15px; word-break: break-all;">
+            ${publicUrl}
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="copyUrlBtn">
+            📋 ${this.i18n.t('qr.copyUrl')}
+          </button>
+          <button class="btn btn-primary" id="downloadQRBtn">
+            ⬇️ ${this.i18n.t('qr.download')}
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Generate QR code
+    const container = document.getElementById('qrcodeContainer');
+    if (this.qrManager && container) {
+      const success = this.qrManager.generateQRCode(publicUrl, container);
+      if (!success) {
+        container.innerHTML = `<p style="color: red;">${this.i18n.t('qr.error')}</p>`;
+      }
+    }
+
+    // Setup button listeners
+    const closeBtn = document.getElementById('closeQRModal');
+    const copyBtn = document.getElementById('copyUrlBtn');
+    const downloadBtn = document.getElementById('downloadQRBtn');
+
+    const closeModal = () => {
+      document.body.removeChild(modal);
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(publicUrl).then(() => {
+        this.showMessage(this.i18n.t('qr.copied'));
+      }).catch(() => {
+        this.showError(this.i18n.t('qr.copyFailed'));
+      });
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      if (this.qrManager.downloadQRCode()) {
+        this.showMessage(this.i18n.t('qr.downloaded'));
+      } else {
+        this.showError(this.i18n.t('qr.downloadFailed'));
+      }
+    });
+
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+  }
+
+  /**
+   * Setup auto-refresh for public mode
+   * Polls every 3 seconds to check for updates
+   */
+  setupAutoRefresh() {
+    // Initial check
+    this.checkAndUpdateLeaderboard();
+
+    // Poll every 3 seconds
+    this.autoRefreshInterval = setInterval(() => {
+      this.checkAndUpdateLeaderboard();
+    }, 3000);
+  }
+
+  /**
+   * Check for leaderboard updates and refresh if needed
+   */
+  checkAndUpdateLeaderboard() {
+    // Re-render leaderboard if visible
+    if (this.currentTab === 'leaderboard') {
+      // Restore latest player stats
+      const latestStats = this.persistence.restorePlayerStats();
+      if (latestStats && latestStats.size > 0) {
+        this.seasonManager.playerStats = latestStats;
+      }
+
+      // Re-render leaderboard
+      this.renderLeaderboard();
+    }
+
+    // Update timestamp
+    this.updateLastUpdatedTimestamp();
+  }
+
+  /**
+   * Update or create last updated timestamp display
+   */
+  updateLastUpdatedTimestamp() {
+    let timestamp = document.getElementById('lastUpdatedTimestamp');
+
+    if (!timestamp) {
+      timestamp = document.createElement('div');
+      timestamp.id = 'lastUpdatedTimestamp';
+      timestamp.className = 'last-updated-timestamp';
+      document.body.appendChild(timestamp);
+    }
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+
+    timestamp.textContent = `${this.i18n.t('public.lastUpdated')}: ${timeStr}`;
+    timestamp.style.display = 'block';
+  }
+
+  /**
+   * Cleanup on app destroy
+   */
+  destroy() {
+    // Clear auto-refresh interval
+    if (this.autoRefreshInterval) {
+      clearInterval(this.autoRefreshInterval);
+      this.autoRefreshInterval = null;
     }
   }
 }

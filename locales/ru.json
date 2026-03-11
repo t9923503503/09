@@ -198,5 +198,19 @@
   "tournament.completed": "Турнир завершён!",
   "tournament.completedMessage": "Турнир завершился. Архивировать результаты и обновить рейтинг?",
   "tournament.archiveAndFinish": "Архивировать и завершить",
-  "tournament.continue": "Продолжить"
+  "tournament.continue": "Продолжить",
+
+  "header.share": "Поделиться турниром",
+
+  "qr.instruction": "Отсканируйте этот QR-код на телефоне, чтобы смотреть обновления турнира в реальном времени",
+  "qr.copyUrl": "Скопировать ссылку",
+  "qr.download": "Скачать QR",
+  "qr.copied": "Ссылка скопирована!",
+  "qr.copyFailed": "Ошибка копирования",
+  "qr.downloaded": "QR-код загружен",
+  "qr.downloadFailed": "Ошибка загрузки QR-кода",
+  "qr.error": "Ошибка генерации QR-кода",
+
+  "public.lastUpdated": "Обновлено",
+  "public.autoRefresh": "Страница обновляется каждые 3 секунды"
 }
